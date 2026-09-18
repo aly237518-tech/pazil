@@ -1,1762 +1,816 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
-<head>
-<meta charset="UTF-8">
-
-<!-- كود التكيف مع الشاشات ومنع التكبير المزعج على الجوال -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-<title>بازل الأبطال الصغار</title>
-
-<style>
-
-/* =========================
-   الأساس
-========================= */
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    padding: 20px;
-
-    font-family:
-        "Segoe UI",
-        Tahoma,
-        Arial,
-        sans-serif;
-
-    background:
-        linear-gradient(
-            135deg,
-            #4facfe,
-            #00f2fe
-        );
-
-    color: white;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    overflow-x: auto;
-}
-
-h1 {
-    margin: 5px 0;
-
-    font-size: 30px;
-
-    text-shadow:
-        2px 2px 5px rgba(0,0,0,.5);
-}
-
-.subtitle {
-    margin: 0 0 15px;
-
-    font-size: 16px;
-}
-
-
-/* =========================
-   أزرار الصور
-========================= */
-
-#character-buttons {
-    display: flex;
-    gap: 10px;
-
-    flex-wrap: wrap;
-
-    justify-content: center;
-
-    margin-bottom: 15px;
-}
-
-button {
-    border: none;
-
-    padding: 11px 18px;
-
-    border-radius: 7px;
-
-    background: #ff9800;
-
-    color: white;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 3px 7px rgba(0,0,0,.25);
-
-    transition:
-        .15s;
-}
-
-button:hover {
-    transform: translateY(-2px);
-
-    background: #e68900;
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-#check-btn {
-    background: #4caf50;
-}
-
-#check-btn:hover {
-    background: #388e3c;
-}
-
-
-/* =========================
-   اللعبة
-========================= */
-
-#game-container {
-    display: none;
-
-    direction: ltr;
-
-    gap: 20px;
-
-    align-items: flex-start;
-
-    padding: 20px;
-
-    border-radius: 15px;
-
-    background:
-        rgba(0,0,0,.20);
-
-    box-shadow:
-        0 5px 20px rgba(0,0,0,.3);
-}
-
-
-/* =========================
-   الأقسام
-========================= */
-
-.game-section {
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-}
-
-.section-title {
-    direction: rtl;
-
-    font-size: 18px;
-
-    font-weight: bold;
-
-    margin-bottom: 8px;
-
-    text-shadow:
-        1px 1px 2px #000;
-}
-
-
-/* =========================
-   صندوق القطع
-========================= */
-
-#pieces-container {
-
-    width: 312px;
-
-    min-height: 411px;
-
-    padding: 4px;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 100px);
-
-    grid-auto-rows: 133px;
-
-    gap: 4px;
-
-    background: #333;
-
-    border-radius: 8px;
-
-    direction: ltr;
-
-}
-
-
-/* =========================
-   لوحة الحل
-========================= */
-
-#puzzle-board {
-
-    width: 312px;
-
-    height: 411px;
-
-    padding: 4px;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 100px);
-
-    grid-template-rows:
-        repeat(3, 133px);
-
-    gap: 4px;
-
-    background: #333;
-
-    border-radius: 8px;
-
-    direction: ltr;
-}
-
-
-/* =========================
-   الخانات
-========================= */
-
-.drop-zone {
-
-    width: 100px;
-
-    height: 133px;
-
-    position: relative;
-
-    background: #222;
-
-    border:
-        2px dashed #777;
-
-    border-radius: 4px;
-
-    transition:
-        .15s;
-}
-
-.drop-zone.drag-over {
-    background: #555;
-
-    border-color:
-        #ffeb3b;
-
-    transform:
-        scale(1.02);
-}
-
-
-/* رقم المكان الشفاف */
-
-.drop-zone::before {
-
-    content: attr(data-number);
-
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    transform:
-        translate(-50%,-50%);
-
-    font-size: 30px;
-
-    font-weight: bold;
-
-    color:
-        rgba(255,255,255,.12);
-
-    pointer-events: none;
-}
-
-
-/* =========================
-   قطع البازل
-========================= */
-
-.tile {
-
-    width: 100px;
-
-    height: 133px;
-
-    position: relative;
-
-    background-repeat: no-repeat;
-
-    border:
-        2px solid white;
-
-    border-radius: 4px;
-
-    cursor: grab;
-
-    user-select: none;
-
-    box-shadow:
-        0 2px 5px rgba(0,0,0,.4);
-
-    transition:
-        transform .12s,
-        opacity .12s,
-        outline .12s;
-}
-
-.tile:hover {
-    transform:
-        scale(1.02);
-}
-
-.tile.dragging {
-    opacity: .45;
-}
-
-.tile.selected {
-    outline:
-        4px solid #ffeb3b;
-
-    outline-offset: 1px;
-
-    transform:
-        scale(1.04);
-
-    z-index: 20;
-}
-
-
-/* =========================
-   رقم القطعة
-========================= */
-
-.tile-number {
-
-    position: absolute;
-
-    top: 0;
-    left: 0;
-
-    padding:
-        2px 7px;
-
-    background:
-        rgba(0,0,0,.8);
-
-    color:
-        #ffeb3b;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    border-bottom-right-radius:
-        5px;
-
-    pointer-events: none;
-}
-
-
-/* =========================
-   التحكم
-========================= */
-
-#controls {
-
-    width: 190px;
-
-    direction: rtl;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    gap: 12px;
-}
-
-#controls button {
-    width: 180px;
-}
-
-#status {
-
-    width: 180px;
-
-    min-height: 32px;
-
-    padding: 6px;
-
-    text-align: center;
-
-    border-radius: 6px;
-
-    background:
-        rgba(0,0,0,.3);
-
-    font-weight: bold;
-}
-
-
-/* =========================
-   الصورة الأصلية
-========================= */
-
-.original-label {
-    font-size: 14px;
-
-    margin-top: 3px;
-}
-
-#original-image {
-
-    width: 130px;
-
-    height: 173px;
-
-    object-fit: cover;
-
-    border:
-        2px solid white;
-
-    border-radius: 6px;
-}
-
-
-/* =========================
-   الفوز
-========================= */
-
-#win-message {
-
-    display: none;
-
-    width: 190px;
-
-    padding: 10px;
-
-    text-align: center;
-
-    border-radius: 8px;
-
-    background:
-        rgba(0,0,0,.85);
-
-    color:
-        #ffeb3b;
-
-    font-size: 18px;
-
-    font-weight: bold;
-
-    animation:
-        winAnimation .5s infinite alternate;
-}
-
-@keyframes winAnimation {
-
-    from {
-        transform: translateY(0);
-    }
-
-    to {
-        transform: translateY(-5px);
-    }
-}
-
-
-/* =========================
-   الاحتفال
-========================= */
-
-.confetti {
-
-    position: fixed;
-
-    top: -30px;
-
-    font-size: 25px;
-
-    z-index: 9999;
-
-    pointer-events: none;
-
-    animation:
-        confettiFall 2s linear forwards;
-}
-
-@keyframes confettiFall {
-
-    0% {
-        transform:
-            translateY(0)
-            rotate(0deg);
-
-        opacity: 1;
-    }
-
-    100% {
-        transform:
-            translateY(110vh)
-            rotate(720deg);
-
-        opacity: 0;
-    }
-}
-
-
-/* =========================
-   الهاتف
-========================= */
-
-@media (max-width: 900px) {
-
-    #game-container {
-
-        flex-direction: column;
-
-        align-items: center;
-    }
-
-    #controls {
-        order: 1;
-    }
-
-    #pieces-section {
-        order: 2;
-    }
-
-    #board-section {
-        order: 3;
-    }
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-
-<h1>
-    🧩 لعبة بيت حكيم
-</h1>
-
-<p class="subtitle">
-    اختر الصورة ثم ركب القطع في لوحة التركيب
-</p>
-
-
-<!-- =========================
-     اختيار الصور
-========================= -->
-
-<div id="character-buttons">
-
-    <button onclick="startGame('kid1.jpg')">
-        👦 صورة حساني
-    </button>
-
-    <button onclick="startGame('kid2.jpg')">
-        👧 صورة ادم
-    </button>
-
-    <button onclick="startGame('kid3.jpg')">
-        👦 صورة الياس
-    </button>
-
-</div>
-
-
-<!-- =========================
-     اللعبة
-========================= -->
-
-<div id="game-container">
-
-
-    <!-- التحكم -->
-
-    <div id="controls">
-
-        <button onclick="shuffleGame()">
-            🔀 خلط القطع
-        </button>
-
-        <button id="check-btn"
-                onclick="checkWin(false)">
-            🏆 تحقق من الفوز
-        </button>
-
-        <div id="status">
-            0 / 9
-        </div>
-
-        <div class="original-label">
-            🖼️ الصورة الأصلية
-        </div>
-
-        <img id="original-image"
-             src=""
-             alt="الصورة الأصلية">
-
-        <div id="win-message">
-            🎉 أحسنت يا بطل! 🎉
-            <br>
-            فزت باللعبة!
-        </div>
-
-    </div>
-
-
-    <!-- قطع الصورة -->
-
-    <div id="pieces-section"
-         class="game-section">
-
-        <div class="section-title">
-            🧩 قطع الصورة
-        </div>
-
-        <div id="pieces-container"></div>
-
-    </div>
-
-
-    <!-- لوحة التركيب -->
-
-    <div id="board-section"
-         class="game-section">
-
-        <div class="section-title">
-            🎯 لوحة التركيب
-        </div>
-
-        <div id="puzzle-board"></div>
-
-    </div>
-
-
-</div>
-
-
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b16"><title>من سيربح الكنز — الإصدار المطوّر</title><style>
+:root{--gold:#f6c945;--gold2:#ff9f1c;--bg:#070b16;--panel:rgba(12,18,32,.92);--panel2:#111a2c;--blue:#4da3ff;--green:#2bd576;--red:#ff5d6c;--muted:#9ba8bf;--line:rgba(255,255,255,.10);--shadow:0 24px 80px rgba(0,0,0,.48)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;font-family:"Tajawal","Segoe UI",Tahoma,Arial,sans-serif;color:#fff;background:radial-gradient(circle at 15% 10%,#17264b 0,transparent 34%),radial-gradient(circle at 85% 90%,#3a2410 0,transparent 32%),linear-gradient(135deg,#050812,#0c1425 55%,#101827);display:flex;align-items:center;justify-content:center;padding:18px;overflow-x:hidden}button{font:inherit}button:focus-visible{outline:3px solid #fff;outline-offset:3px}.app{width:min(100%,760px)}.card{background:linear-gradient(180deg,rgba(18,26,45,.96),rgba(7,12,23,.97));border:1px solid rgba(246,201,69,.35);border-radius:28px;box-shadow:var(--shadow);overflow:hidden;position:relative}.card:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.05),transparent 25%,transparent 75%,rgba(246,201,69,.04));pointer-events:none}.screen{padding:24px}.hidden{display:none!important}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.brand{font-size:15px;color:var(--gold);font-weight:900;letter-spacing:.2px}.badge{background:rgba(246,201,69,.12);border:1px solid rgba(246,201,69,.28);color:var(--gold);padding:7px 11px;border-radius:999px;font-weight:800;font-size:12px}.hero{text-align:center;padding:20px 10px 10px}.hero .logo{font-size:68px;filter:drop-shadow(0 10px 22px rgba(246,201,69,.18));animation:float 2.4s ease-in-out infinite}.hero h1{margin:8px 0;font-size:clamp(26px,6vw,40px);color:var(--gold)}.hero p{margin:0 auto;color:var(--muted);max-width:560px;line-height:1.8}.setup{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}.field{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:right}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}.field input,.field select{width:100%;border:0;background:transparent;color:#fff;outline:none;font-size:15px}.field select option{background:#101827;color:#fff}.primary,.secondary,.danger{border:0;border-radius:16px;padding:14px 18px;font-weight:900;cursor:pointer;transition:.2s}.primary{background:linear-gradient(135deg,#ffd84d,#f0a91b);color:#201600;box-shadow:0 10px 30px rgba(246,201,69,.18)}.secondary{background:rgba(255,255,255,.07);color:#fff;border:1px solid var(--line)}.danger{background:rgba(255,93,108,.12);color:#ff8994;border:1px solid rgba(255,93,108,.2)}.primary:hover,.secondary:hover,.danger:hover{transform:translateY(-2px)}.start-actions{display:flex;gap:10px;margin-top:14px}.start-actions>*{flex:1}.mini-note{font-size:11px;color:#748198;text-align:center;margin-top:12px}.hud{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:12px}.stage{font-weight:900;color:#fff}.money{color:var(--gold);font-weight:900}.timer{min-width:68px;text-align:center;padding:7px 9px;border-radius:12px;background:rgba(255,255,255,.06);font-weight:900}.timer.warning{color:#ff9a5a;animation:pulse 1s infinite}.timer.danger{color:#ff6472;animation:pulse .55s infinite}.progress{height:9px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:18px}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2bd576,#f6c945);transition:width .35s}.question-card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.025));border:1px solid var(--line);border-radius:22px;padding:18px}.character{display:flex;gap:12px;align-items:center;margin-bottom:16px}.avatar{width:54px;height:54px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:32px;box-shadow:0 8px 18px rgba(0,0,0,.25);flex:none}.speaker{color:var(--blue);font-weight:900;font-size:12px}.speech{color:#dce5f5;font-size:13px;line-height:1.65;margin-top:2px}.category{display:inline-flex;gap:6px;align-items:center;color:#9dc8ff;font-size:11px;background:rgba(77,163,255,.09);padding:5px 9px;border-radius:999px;margin-bottom:10px}.question{font-size:clamp(19px,4vw,25px);font-weight:900;line-height:1.65;margin:0}.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.option{position:relative;text-align:right;background:linear-gradient(135deg,#17294a,#1a3561);border:1px solid rgba(77,163,255,.35);color:#fff;border-radius:15px;padding:14px 44px 14px 14px;cursor:pointer;min-height:58px;font-weight:800;transition:.18s}.option:hover{transform:translateY(-2px);border-color:#69b1ff}.option .letter{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:25px;height:25px;border-radius:8px;background:rgba(255,255,255,.10);display:grid;place-items:center;color:#9dc8ff;font-size:12px}.option.correct{background:rgba(43,213,118,.18);border-color:#2bd576}.option.wrong{background:rgba(255,93,108,.18);border-color:#ff5d6c}.option.dim{opacity:.4}.option:disabled{cursor:default}.lifelines{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.life{background:rgba(246,201,69,.08);border:1px solid rgba(246,201,69,.18);color:#f6d979;border-radius:13px;padding:10px 6px;font-size:12px;font-weight:900;cursor:pointer}.life:disabled{opacity:.35;cursor:not-allowed}.footer-actions{display:flex;gap:8px;margin-top:12px}.footer-actions button{flex:1}.feedback{min-height:25px;text-align:center;font-weight:900;font-size:13px;margin-top:10px}.feedback.ok{color:var(--green)}.feedback.bad{color:var(--red)}.overlay{position:fixed;inset:0;background:rgba(2,5,12,.76);backdrop-filter:blur(8px);display:grid;place-items:center;padding:18px;z-index:20}.modal{width:min(100%,460px);background:#0d1526;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow);text-align:center}.modal h2{margin-top:0;color:var(--gold)}.modal p{color:#c7d1e2;line-height:1.7}.modal-actions{display:flex;gap:8px}.modal-actions>*{flex:1}.result{text-align:center}.result .treasure{font-size:80px;animation:float 1.8s infinite}.result h1{color:var(--gold);font-size:30px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:18px 0}.stat{padding:14px 8px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px}.stat b{display:block;font-size:20px;color:var(--gold)}.stat span{color:var(--muted);font-size:11px}.table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}.table th,.table td{padding:8px;border-bottom:1px solid var(--line);text-align:center}.table th{color:var(--muted)}.toast{position:fixed;bottom:18px;left:50%;transform:translate(-50%,20px);opacity:0;background:#111a2c;border:1px solid var(--line);padding:11px 15px;border-radius:13px;z-index:30;transition:.25s;pointer-events:none;font-size:12px}.toast.show{opacity:1;transform:translate(-50%,0)}.shake{animation:shake .35s}.pop{animation:pop .3s}@keyframes float{50%{transform:translateY(-7px)}}@keyframes pulse{50%{transform:scale(1.04)}}@keyframes shake{25%{transform:translateX(6px)}50%{transform:translateX(-6px)}75%{transform:translateX(4px)}}@keyframes pop{50%{transform:scale(1.03)}}@media(max-width:600px){body{padding:8px}.screen{padding:16px}.setup,.options{grid-template-columns:1fr}.hero .logo{font-size:55px}.hero h1{font-size:27px}.hud{grid-template-columns:1fr auto}.hud .money{grid-column:1}.timer{grid-column:2;grid-row:1/3}.lifelines{grid-template-columns:1fr 1fr 1fr}.option{min-height:54px}.stats{grid-template-columns:1fr 1fr 1fr}.start-actions{flex-direction:column}}
+</style></head>
+<body><main class="app"><section class="card" id="startScreen"><div class="screen"><div class="hero"><div class="logo">🏆</div><h1>من سيربح الكنز</h1><p>نسخة مطوّرة من اللعبة: 300 سؤال، ثلاث مراحل، مؤقت، وسائل مساعدة، حفظ تلقائي، صوت، وإحصائيات كاملة.</p></div><div class="setup"><div class="field"><label for="playerName">اسم اللاعب</label><input id="playerName" maxlength="24" placeholder="اكتب اسمك هنا"></div><div class="field"><label for="difficulty">نمط اللعب</label><select id="difficulty"><option value="classic">كلاسيكي — 100 سؤال لكل مرحلة</option><option value="short">سريع — 30 سؤالاً إجمالاً</option></select></div></div><div class="start-actions"><button class="primary" id="startBtn">🚀 ابدأ المغامرة</button><button class="secondary hidden" id="continueBtn">▶️ متابعة الحفظ</button></div><div class="mini-note">يمكنك إيقاف اللعبة والعودة لاحقاً؛ التقدم يُحفظ تلقائياً على جهازك.</div></div></section>
+<section class="card hidden" id="gameScreen"><div class="screen"><div class="topbar"><div class="brand">🏆 من سيربح الكنز</div><span class="badge" id="categoryBadge">معلومات عامة</span></div><div class="hud"><div class="stage" id="stageText"></div><div class="money" id="moneyText"></div><div class="timer" id="timer">30</div></div><div class="progress"><i id="progressFill"></i></div><div class="question-card" id="questionCard"><div class="character"><div class="avatar" id="avatar">👦</div><div><div class="speaker" id="speaker">حساني</div><div class="speech" id="speech">ركز جيداً…</div></div></div><div class="category" id="category">🧠 ثقافة عامة</div><h2 class="question" id="question">...</h2><div class="options" id="options"></div><div class="lifelines"><button class="life" id="fifty">🌓 50:50</button><button class="life" id="hint">💡 تلميح</button><button class="life" id="skip">⏭️ تخطي</button></div><div class="feedback" id="feedback"></div></div><div class="footer-actions"><button class="secondary" id="pauseBtn">⏸️ إيقاف مؤقت</button><button class="danger" id="quitBtn">🚪 خروج وحفظ</button></div></div></section>
+<section class="card hidden" id="resultScreen"><div class="screen result"><div class="treasure">💎🏆💰</div><h1 id="resultTitle">مبروك!</h1><p id="resultText" style="color:#c7d1e2;line-height:1.8"></p><div class="stats"><div class="stat"><b id="resultCorrect">0</b><span>إجابات صحيحة</span></div><div class="stat"><b id="resultScore">0</b><span>النقاط</span></div><div class="stat"><b id="resultTime">0</b><span>ثانية</span></div></div><button class="primary" id="restartBtn">🔄 مغامرة جديدة</button></div></section></main><div class="overlay hidden" id="pauseOverlay"><div class="modal"><h2>⏸️ اللعبة متوقفة</h2><p>تقدمك محفوظ. يمكنك المتابعة الآن أو الخروج إلى الشاشة الرئيسية.</p><div class="modal-actions"><button class="primary" id="resumeBtn">متابعة</button><button class="secondary" id="homeBtn">الرئيسية</button></div></div></div><div class="overlay hidden" id="confirmOverlay"><div class="modal"><h2>هل تريد الخروج؟</h2><p>سيتم حفظ تقدمك الحالي لتستطيع المتابعة لاحقاً.</p><div class="modal-actions"><button class="primary" id="confirmExit">حفظ وخروج</button><button class="secondary" id="cancelExit">إلغاء</button></div></div></div><div class="toast" id="toast"></div>
 <script>
+const spaceQuestions100 = [
+    { q: "ما هو الكوكب الأقرب إلى الشمس؟", opts: ["عطارد", "الزهرة", "المريخ", "المشتري"], corr: 0 },
+    { q: "ما هو أكبر كوكب في المجموعة الشمسية؟", opts: ["الأرض", "زحل", "المشتري", "نبتون"], corr: 2 },
+    { q: "ما هو الكوكب الذي يُعرف بالكوكب الأحمر؟", opts: ["المريخ", "زحل", "عطارد", "الزهرة"], corr: 0 },
+    { q: "كم عدد كواكب المجموعة الشمسية الرسمية؟", opts: ["7 كواكب", "8 كواكب", "9 كواكب", "10 كواكب"], corr: 1 },
+    { q: "ما هي المجرة التي ينتمي إليها كوكب الأرض؟", opts: ["دروب التبانة", "المرأة المسلسلة", "الصقر", "السحابة"], corr: 0 },
+    { q: "من هو أول إنسان صعد إلى الفضاء الخارجي؟", opts: ["نيل آرمسترونغ", "يوري غاغارين", "باز ألدرين", "جون غلين"], corr: 1 },
+    { q: "ما هي أبرد كواكب المجموعة الشمسية؟", opts: ["أورانوس", "نبتون", "زحل", "المريخ"], corr: 1 },
+    { q: "أي الغازات التالية يشكل النسبة الأكبر من مكونات الشمس؟", opts: ["الأكسجين", "الهيدروجين", "النيتروجين", "الهيليوم"], corr: 1 },
+    { q: "ما هو التلسكوب الفضائي الشهير الذي أُطلق عام 1990؟", opts: ["جيمس ويب", "هابل", "كيبلر", "سبيتزر"], corr: 1 },
+    { q: "ما اسم أقرب نجم إلى كوكب الأرض بعد الشمس؟", opts: ["الشعرى اليمانية", "بروكسيما سنتوري", "النجم القطب", "سهيل"], corr: 1 },
+    { q: "ما هو الكوكب الذي يُعرف بتوأم الأرض؟", opts: ["الزهرة", "المريخ", "عطارد", "المشتري"], corr: 0 },
+    { q: "ما هو الكوكب الذي يحتوي على نظام حلقات ضخم ومميز؟", opts: ["زحل", "المشتري", "أورانوس", "نبتون"], corr: 0 },
+    { q: "ما اسم أول رائد فضاء مشى على سطح القمر؟", opts: ["نيل آرمسترونغ", "يوري غاغارين", "باز ألدرين", "مايكل كولينز"], corr: 0 },
+    { q: "في أي عام هبط الإنسان على سطح القمر لأول مرة؟", opts: ["1959", "1969", "1979", "1985"], corr: 1 },
+    { q: "ما هي القوة التي تبقي الكواكب تدور حول الشمس؟", opts: ["الجاذبية", "المغناطيسية", "الطرد المركزي", "الضغط الجوي"], corr: 0 },
+    { q: "ما هو أطول كواكب المجموعة الشمسية من حيث مدة اليوم الواحد؟", opts: ["الزهرة", "المشتري", "عطارد", "المريخ"], corr: 0 },
+    { q: "ما هو اسم الوكالة الفضائية الأمريكية؟", opts: ["نأسا (NASA)", "وكالة الفضاء الأوروبية", "روكوزموس", "جاكسا"], corr: 0 },
+    { q: "ما هو الكوكب الذي يدور حول محوره بشكل مائل جداً (كأنه يتدحرج)؟", opts: ["أورانوس", "نبتون", "زحل", "المشتري"], corr: 0 },
+    { q: "ما هي الظاهرة الفلكية التي يحجب فيها القمر ضوء الشمس عن الأرض؟", opts: ["خسوف القمر", "كسوف الشمس", "الشهب", "النيزك"], corr: 1 },
+    { q: "ما هي الظاهرة الفلكية التي يدخل فيها القمر في ظل كوكب الأرض؟", opts: ["كسوف الشمس", "خسوف القمر", "الاقتران", "الذيل النجمي"], corr: 1 },
+    { q: "ما هو الاسم الذي يطلق على الصخور الفضائية التي تسقط وتصطدم بسطح الأرض؟", opts: ["الشهب", "النيزك", "المذنبات", "الكويكبات"], corr: 1 },
+    { q: "ما هو الاسم الذي يطلق على الصخور الفضائية التي تحترق في الغلاف الجوي؟", opts: ["الشهب", "النيازك", "المذنبات", "الأقمار الصناعية"], corr: 0 },
+    { q: "ما هو أسرع الكواكب دوران حول الشمس؟", opts: ["عطارد", "الزهرة", "الأرض", "المريخ"], corr: 0 },
+    { q: "ما هو الكوكب الذي يتميز بوجود 'البقعة الحمراء العظيمة' عليه؟", opts: ["المشتري", "المريخ", "زحل", "نبتون"], corr: 0 },
+    { q: "ما هي طبقة الغلاف الجوي التي تحمي الأرض من أشعة الشمس الضارة؟", opts: ["طبقة الأوزون", "التروبوسفير", "الإينوسفير", "الستراتوسفير"], corr: 0 },
+    { q: "ما هو أضخم نوع من النجوم في الكون؟", opts: ["العملاق الأحمر", "القزم الأبيض", "النجوم النيوترونية", "الثقب الأسود"], corr: 0 },
+    { q: "ما هو الاسم الذي يطلق على بقايا النجم المنهار ذات الجاذبية الهائلة التي لا يهرب منها الضوء؟", opts: ["الثقب الأسود", "السديم", "النباض", "الكويكب"], corr: 0 },
+    { q: "من هو العالم الذي وضع قوانين حركة الكواكب؟", opts: ["يوهانس كيبلر", "إسحاق نيوتن", "ألبرت أينشتاين", "غاليليو غاليلي"], corr: 0 },
+    { q: "من هو العالم الذي استخدم التلسكوب لأول مرة لدراسة الفضاء؟", opts: ["غاليليو غاليلي", "كوبرنيكوس", "إديسون", "هابل"], corr: 0 },
+    { q: "ما هو الكوكب الذي يحتوي على أكبر عدد من الأقمار المعروفة في مجموعتنا الشمسية؟", opts: ["زحل", "المشتري", "أورانوس", "نبتون"], corr: 0 },
+    { q: "ما هي السحابة الهائلة من الغبار والغاز في الفضاء والتي تولد منها النجوم؟", opts: ["السديم (Nebula)", "المجرة", "الثقب الأسود", "الكويكب"], corr: 0 },
+    { q: "ما هي وحدة القياس المستخدمة لقياس المسافات الشاسعة بين النجوم والمجرات؟", opts: ["السنة الضوئية", "الكيلومتر", "الميل", "الفرسخ البحري"], corr: 0 },
+    { q: "كم تبلغ سرعة الضوء في الفضاء تقريباً؟", opts: ["300 ألف كيلومتر في الثانية", "3000 كيلومتر في الثانية", "150 ألف كيلومتر في الثانية", "مليون كيلومتر في الثانية"], corr: 0 },
+    { q: "كم يستغرق ضوء الشمس لكي يصل إلى كوكب الأرض؟", opts: ["8 دقائق وثمينة", "ساعة كاملة", "ثانية واحدة", "يوم كامل"], corr: 0 },
+    { q: "ما هي عائلة الكواكب التي تضم (عطارد، الزهرة، الأرض، المريخ)؟", opts: ["الكواكب الصخرية الداخلية", "الكواكب الغازية العملاقة", "العمالقة الجليدية", "حزام الكويكبات"], corr: 0 },
+    { q: "ما هي عائلة الكواكب التي تضم (المشتري، زحل، أورانوس، نبتون)؟", opts: ["الكواكب الخارجية العملاقة", "الكواكب الصخرية", "الأقمار الطبيعية", "الشهب النجمية"], corr: 0 },
+    { q: "ما هو اسم المسبار الفضائي الذي تجاوز حدود المجموعة الشمسية ودخل الفضاء بين النجوم؟", opts: ["فوياجر 1 (Voyager 1)", "أبولو 11", "كوسموس", "سبوتنيك"], corr: 0 },
+    { q: "ما هو أول قمر صناعي تم إطلاقه في تاريخ البشرية بواسطة الاتحاد السوفيتي عام 1957؟", opts: ["سبوتنيك 1", "هابل 1", "جيمس ويب", "الناسا 1"], corr: 0 },
+    { q: "ما هو اسم المذبح أو المذنب الشهير الذي يزور الأرض كل 76 عاماً تقريباً؟", opts: ["مذنب هالي", "مذنب هيل بوب", "مذنب إيسون", "مذنب إنكي"], corr: 0 },
+    { q: "ما هو الكوكب الذي يمتلك أقصر سنة (يدور حول الشمس بأسرع وقت)؟", opts: ["عطارد", "الزهرة", "الأرض", "المريخ"], corr: 0 },
+    { q: "ما هو الكوكب الذي يمتلك أطول سنة في المجموعة الشمسية؟", opts: ["نبتون", "أورانوس", "زحل", "المشتري"], corr: 0 },
+    { q: "ما هو اسم خط الاستواء السماوي الذي يقسم الكرة السماوية إلى نصفين؟", opts: ["المستوى الاستوائي الفضائي", "خط غرينتش الفضائي", "مدار السرطان", "مدار الجدي"], corr: 0 },
+    { q: "ما هو الشكل الهندسي لمدارات الكواكب حول الشمس حسب قوانين كيبلر؟", opts: ["إهليلجي (بيضاوي)", "دائري تماماً", "مربع", "مستطيل"], corr: 0 },
+    { q: "ما هي طبقة الشمس الخارجية المرئية التي تنبعث منها الطاقة الضوئية؟", opts: ["الضوئية (الفوتوسفير)", "الهالة الشمسية", "اللب الداخلي", "الكروموسفير"], corr: 0 },
+    { q: "ما هي الغازات الأساسية التي تتكون منها نجوم الكون بنسبة تتجاوز 98%؟", opts: ["الهيدروجين والهيليوم", "الأكسجين والنيتروجين", "ثاني أكسيد الكربون والميثان", "الهيليوم والأرجون"], corr: 0 },
+    { q: "ما هو اسم أكبر قمر تابع لكوكب المشتري (وهو أكبر قمر في المجموعة الشمسية)؟", opts: ["غانيميد", "تيتان", "إيو", "كاليستو"], corr: 0 },
+    { q: "ما هو اسم القمر الوحيد لكوكب زحل والذي يمتلك غلافاً جوياً كثيفاً؟", opts: ["تيتان", "ميماس", "إنسيلادوس", "ريا"], corr: 0 },
+    { q: "ما هي المنطقة الواقعة بين المريخ والمشتري وتضم آلاف الصخور الفضائية؟", opts: ["حزام الكويكبات الرئيسي", "حزام كايبر", "سحابة أورت", "المجرة الحلزونية"], corr: 0 },
+    { q: "ما هي المنطقة المتجمدة الواقعة خلف كوكب نبتون وتضم الأجرام الجليدية والمذنبات؟", opts: ["حزام كايبر", "حزام الكويكبات", "سحابة أورت", "مدار الكواكب الداخلية"], corr: 0 },
+    { q: "ما هو اسم المحطة الفضائية الدولية التي تدور حول الأرض ويقيم فيها رواد الفضاء؟", opts: ["محطة الفضاء الدولية (ISS)", "محطة مير", "محطة تيانجونگ", "محطة سكاي لاب"], corr: 0 },
+    { q: "ما هو اسم أول رائدة فضاء صعدت إلى الفضاء الخارجي (سوفيتية الجنسية)؟", opts: ["فالنتينا تيريشكوفا", "سالي رايد", "ماي جيميسون", "بيجي ويتسون"], corr: 0 },
+    { q: "ما هو الكوكب الذي تبلغ درجة حرارة سطحه أعلى درجة في المجموعة الشمسية بسبب تأثير البيت الزجاجي؟", opts: ["الزهرة", "عطارد", "المريخ", "المشتري"], corr: 0 },
+    { q: "ما هي القوة الكونية التي تتسبب في تباعد المجرات عن بعضها وتوسع الكون؟", opts: ["الطاقة المظلمة", "المادة المظلمة", "الجاذبية الكونية", "الكهرومغناطيسية"], corr: 0 },
+    { q: "ما هو الاسم الذي يطلق على المادة غير المرئية التي تشكل معظم كتلة الكون ولا تمتص الضوء؟", opts: ["المادة المظلمة (Dark Matter)", "الطاقة المظلمة", "الغازات السدمية", "النجوم النيوترونية"], corr: 0 },
+    { q: "ما هو اسم التلسكوب الفضائي الحديث الخلف لهابل والذي التقط أعمق صور للكون؟", opts: ["تلسكوب جيمس ويب الفضائي", "تلسكوب سبيتزر", "تلسكوب تشاندرا", "تلسكوب كيبلر"], corr: 0 },
+    { q: "ما هو اسم الانفجار الهائل الذي نشأ عنه الكون قبل حوالي 13.8 مليار سنة؟", opts: ["الانفجار العظيم (Big Bang)", "الانهيار الكبير", "التمدد الأولي", "الاندماج العظيم"], corr: 0 },
+    { q: "ما هي النجوم التي تنبض بإشارات راديوية منتظمة ودقيقة للغاية؟", opts: ["النجوم النابضة (الپلسار)", "العمالقة الحمراء", "الأقزام البيضاء", "النجوم الثنائية"], corr: 0 },
+    { q: "ما هو اسم المجرة الحلزونية العملاقة القريبة جداً من مجرتنا درب التبانة؟", opts: ["مجرة المرأة المسلسلة (أندروميدا)", "مجرة المثلث", "مجرة السحابة الكبيرة", "مجرة الصقر"], corr: 0 },
+    { q: "ما هو الكوكب الذي سُحب منه لقب كوكب رسمي وصُنّف ككوكب قزم عام 2006؟", opts: ["بلوتو", "سيريس", "إريس", "هاوميا"], corr: 0 },
+    { q: "ما هو أشهر كوكب قزم يقع في حزام كايبر؟", opts: ["بلوتو", "جانيت", "فوبوس", "ديموس"], corr: 0 },
+    { q: "ما اسم قمري كوكب المريخ الصغيرين؟", opts: ["فوبوس وديموس", "تيتان وتريتون", "إيو وغانيميد", "تيو ولونا"], corr: 0 },
+    { q: "ما هو اسم أقدم وأكبر فوهة بركانية تم اكتشافها على سطح المريخ؟", opts: ["أوليمبوس مونس", "جبل الكرمل المريخي", "فوهة تايلور", "وادي المارينز"], corr: 0 },
+    { q: "ما هو أكبر بركان وجبل معروف في المجموعة الشمسية ويقع على كوكب المريخ؟", opts: ["أوليمبوس مونس (Olympus Mons)", "جبل إيفرست", "ماونا لوا", "بركان الكوكب"], corr: 0 },
+    { q: "ما هي الظاهرة التي تحدث عندما يمر الكوكب أمام قرص الشمس بالنسبة للأرض (مثل انتقال الزهرة)؟", opts: ["العبور الفلكي", "الكسوف", "الخسوف", "الاقتران"], corr: 0 },
+    { q: "ما هو اسم النقطة في مدار القمر التي تكون فيها أقرب ما يمكن للأرض؟", opts: ["الحضيض القمري (Perigee)", "الأوج", "النقطة المركزية", "المدار العميق"], corr: 0 },
+    { q: "ما هو اسم النقطة في مدار القمر التي تكون فيها أبعد ما يمكن عن الأرض؟", opts: ["الأوج القمري (Apogee)", "الحضيض", "الذروة", "النقطة البعيدة"], corr: 0 },
+    { q: "ما هي الحركة الظاهرية لمحور الأرض والتي تستغرق حوالي 26 ألف سنة لتكمل دورة كاملة؟", opts: ["بادرة الاعتدالين (Precession)", "الدوران الذاتي", "الدوران المداري", "الانحراف العمودي"], corr: 0 },
+    { q: "ما هو اسم الفضاء الواقع بين الكواكب داخل المجموعة الشمسية؟", opts: ["الوسط بين الكوكبي", "الفضاء الخارجي السحيق", "الفراغ المطلق", "المحيط المجري"], corr: 0 },
+    { q: "ما هو اسم الغلاف المغناطيسي الضخم المحيط بكوكب الأرض ويحميها من الرياح الشمسية؟", opts: ["الغلاف المغناطيسي (Magnetosphere)", "الغلاف الجوي", "طبقة الأوزون", "الحزام الإشعاعي"], corr: 0 },
+    { q: "ما هي الحزم الإشعاعية الكثيفة المحيطة بالأرض والمكتشفة بواسطة أبحاث الفضاء؟", opts: ["حزاما فان ألن الإشعاعيان", "حزاما كايبر", "أحزمة الأزمات", "الأحزمة المغناطيسية"], corr: 0 },
+    { q: "ما هو اسم المركبة الفضائية البشرية التي هبطت على سطح المنهل القمري في مهام أپولو؟", opts: ["المرحلة القمرية (LEM)", "المحطة المدارية", "الكبسولة الفضائية", "المركبة الصاروخية"], corr: 0 },
+    { q: "ما هو اسم الصاروخ العملاق الذي استخدمته وكالة ناسا لإنزال البشر على القمر؟", opts: ["ساترون 5 (Saturn V)", "فالكون هవీ", "أريان 5", "سويوز"], corr: 0 },
+    { q: "ما هو العلم الذي يدرس أصل الكون وتطوره وبنيته الكلية؟", opts: ["علم الكونيات (Cosmology)", "علم الفلك", "الفيزياء الفلكية", "علم التنجيم"], corr: 0 },
+    { q: "ما هو العلم الذي يدرس مواقع الحركات والخصائص الفيزيائية للأجرام السماوية؟", opts: ["علم الفلك (Astronomy)", "علم الكون", "الجيولوجيا الفضائية", "الأرصاد الجوية"], corr: 0 },
+    { q: "ما هي التفاعلات النووية التي تحدث في قلب الشمس وتنتج الطاقة الهائلة؟", opts: ["الاندماج النووي (تحول الهيدروجين لهيليوم)", "الانشطار النووي", "الاحتراق الكيميائي", "التأين الضوئي"], corr: 0 },
+    { q: "ما هو الاسم الذي يطلق على الخط الوهمي الذي تدور حوله الأرض؟", opts: ["محور الأرض", "خط الاستواء", "خط الطول", "خط العرض"], corr: 0 },
+    { q: "كم يميل محور دوران الأرض عن خط العمود المستوي؟", opts: ["حوالي 23.5 درجة", "حوالي 45 درجة", "صفر درجة", "90 درجة"], corr: 0 },
+    { q: "ما هي الظاهرة التي تنتج عن ميل محور الأرض أثناء دورانها حول الشمس؟", opts: ["فصول السنة الأربعة", "الليل والنهار", "المد والجزر", "الكسوف والخسوف"], corr: 0 },
+    { q: "ما هي الظاهرة التي تنتج عن دوران الأرض حول محورها أمام الشمس؟", opts: ["تعاقب الليل والنهار", "فصول السنة الأربعة", "تغير الأقمار", "حركة النجوم السنوية"], corr: 0 },
+    { q: "ما هو اسم القمر الطبيعي الوحيد لكوكب الأرض؟", opts: ["القمر (لونا)", "تيتان", "فوبوس", "جانيميد"], corr: 0 },
+    { q: "ما هي المدة التي يستغرقها القمر ليدور دورة كاملة حول كوكب الأرض؟", opts: ["حوالي 29.5 يوماً (الشهر القمري)", "365 يوماً", "24 ساعة", "7 أيام"], corr: 0 },
+    { q: "ما هي الظاهرة الناتجة عن تأثير جاذبية القمر والشمس على مياه محيطات الأرض؟", opts: ["المد والجزر", "التيارات البحرية", "الزلازل المائية", "الأعاصير القطبية"], corr: 0 },
+    { q: "ما هو الاسم الذي يطلق على النجوم المتغيرة التي تستخدم لقياس المسافات الكونية بدقة؟", opts: ["النجوم القيفاوية (Cepheids)", "العملاقة الحمراء", "النجوم النيوترونية", "الأقزام البيضاء"], corr: 0 },
+    { q: "ما هي سحابة أورت (Oort Cloud) الافتراضية؟", opts: ["قشرة بعيدة جداً تحيط بالمجموعة الشمسية وتضم مليارات المذنبات", "سحابة غبار فوق المريخ", "حزام كويكبات داخلي", "غلاف الشمس الخارجي"], corr: 0 },
+    { q: "ما هو اسم المسبار الفضائي الذي زار كوكب بلوتو والتقط أول صور مقربة له عام 2015؟", opts: ["نيو هورايزونز (New Horizons)", "فوياجر 2", "كاسيني", "باثفايندر"], corr: 0 },
+    { q: "ما هو اسم المركبة التي درست كوكب زحل وحلقاته لأعوام طويلة حتى عام 2017؟", opts: ["كاسيني - هويغنز (Cassini-Huygens)", "جاليفو", "مارينر", "فايبر"], corr: 0 },
+    { q: "ما هو الكوكب الذي يمتلك نظام رياح هو الأسرع والأعنف في المجموعة الشمسية؟", opts: ["نبتون", "المشتري", "زحل", "أورانوس"], corr: 0 },
+    { q: "ما هو الاسم الذي يطلق على دراسة وتتبع الأجسام القريبة من الأرض والتي تشكل خطراً محتملاً؟", opts: ["رصد الأجسام القريبة من الأرض (NEO)", "علم الفلك الترفيهي", "مسح المجرات", "تتبع النجوم"], corr: 0 },
+    { q: "ما هي تكنولوجيا الدفع الفضائي التي تعتمد على تسريع الأ ions باستخدام الكهرباء؟", opts: ["محركات الأيون (Ion Thrusters)", "المحركات الصواريخ الكيميائية", "محركات الدفع النووي", "الشراع الضوئي"], corr: 0 },
+    { q: "ما هي التقنية التي تستخدم أشعة الليزر والضوء لدفع المركبات الفضائية عبر الشراع؟", opts: ["الشراع الضوئي (Solar Sail)", "الدفع المغناطيسي", "الدفعة الأيونية", "الاندماج الليزري"], corr: 0 },
+    { q: "ما هو اسم النجم القطبي الذي استخدمه المسافرون لقرون لتحديد الاتجاهات شمالاً؟", opts: ["نجم الجدي (Polaris)", "الشعرى اليمانية", "النجم الأحمر", "سهيل"], corr: 0 },
+    { q: "ما هي مجموعة النجوم الشهيرة التي تشبه شكل الدب الأصغر وتحتوي على النجم القطبي؟", opts: ["الدب الأصغر (Ursa Minor)", "الدب الأكبر", "مجموعة الجبار", "مجموعة ذات الكيسي"], corr: 0 },
+    { q: "ما هي الكوكبة النجمية الشهيرة التي تضم حزاماً من ثلاثة نجوم متلاصقة وتعرف بحزام الجبار؟", opts: ["كوكبة الجبار (Orion)", "كوكبة الأسد", "كوكبة العقرب", "كوكبة الثور"], corr: 0 },
+    { q: "ما هو اسم الخط الوهمي في السماء الذي تمر عبره الشمس والكواكب طوال العام؟", opts: ["دائرة البروج (Ecliptic)", "خط الاستواء السماوي", "مدار السرطان", "المستوى المجري"], corr: 0 },
+    { q: "كم عدد الأبراج الفلكية الرسمية الواقعة على دائرة البروج؟", opts: ["12 برجاً", "10 أبراج", "14 برجاً", "8 أبراج주의"], corr: 0 },
+    { q: "ما هو أقدم تقويم فلكي استُخدم لتحديد مواسم الزراعة والفيضانات في التاريخ القديم؟", opts: ["التقويم السمري/البابلي القمري الشمسي", "التقويم الميلادي", "التقويم الهجري", "التقويم الصيني"], corr: 0 },
+    { q: "ما هو الاسم العلمي لدراسة التركيب الكيميائي للأجرام السماوية عبر طيف الضوء؟", opts: ["التحليل الطيفي (Spectroscopy)", "التصوير الفلكي", "القياس الراديوي", "الرصد البصري"], corr: 0 },
+    { q: "ما هو التلسكوب الراديوي الأضخم في العالم والمخصص لالتقاط الإشارات من أعماق الكون؟", opts: ["تلسكوب FAST في الصين", "تلسكوب أريسيبو", "تلسكوب غرين بانك", "شبكة التلسكوبات الكبرى"], corr: 0 },
+    { q: "ما هي الظاهرة التي تتثنى فيها مسارات الضوء القادم من النجوم البعيدة بفعل الجاذبية الهائلة للمجرات؟", opts: ["عدسة الجاذبية (Gravitational Lensing)", "انكسار الضوء الفضائي", "التحايل الضوئي", "الصدى الكوني"], corr: 0 },
+    { q: "ما هي الإشعاعات المتبقية من الانفجار العظيم والتي تملأ الكون بأسره كصدى حراري أزلي؟", opts: ["إشعاع الخلفية الكونية الميكروي (CMB)", "الأشعة السينية الكونية", "الرياح الشمسية", "الأشعة فوق البنفسجية"], corr: 0 },
+    { q: "ما هو مصير الشمس النهائي بعد مليارات السنين حسب النظريات الفيزيائية الفلكية؟", opts: ["ستتحول إلى عملاق أحمر ثم إلى قزم أبيض", "ستن انفجار سوبرنوفا هائل", "ستتحول إلى ثقب أسود", "ستختفي فجأة دون آثار"], corr: 0 }
+];
+const religionQuestions100 = [
+    { q: "كم عدد سور القرآن الكريم؟", opts: ["112 سورة", "114 سورة", "120 سورة", "100 سورة"], corr: 1 },
+    { q: "ما هي السورة التي تُسمى بقلب القرآن؟", opts: ["سورة البقرة", "سورة الملك", "سورة يس", "سورة الرحمن"], corr: 2 },
+    { q: "في أي شهر أنزل القرآن الكريم؟", opts: ["رجب", "شعبان", "رمضان", "ذو الحجة"], corr: 2 },
+    { q: "من هو أول مؤذن في الإسلام؟", opts: ["عمر بن الخطاب", "بلال بن رباح", "علي بن أبي طالب", "أبو بكر الصديق"], corr: 1 },
+    { q: "كم عدد أركان الإيمان الستة؟", opts: ["5 أركان", "6 أركان", "4 أركان", "7 أركان"], corr: 1 },
+    { q: "ما هي السورة التي تنتهي كل آياتها بحرف الهاء؟", opts: ["سورة الإخلاص", "سورة القارعة", "سورة العصر", "سورة النصر"], corr: 1 },
+    { q: "من هو النبي الملقب بخليل الله؟", opts: ["موسى عليه السلام", "إبراهيم عليه السلام", "عيسى عليه السلام", "نوح عليه السلام"], corr: 1 },
+    { q: "ما هي أطول سورة في القرآن الكريم؟", opts: ["سورة آل عمران", "سورة البقرة", "سورة النساء", "سورة الأعراف"], corr: 1 },
+    { q: "ما هي أقصر سورة في القرآن الكريم؟", opts: ["سورة الكوثر", "سورة العصر", "سورة الإخلاص", "سورة الفلق"], corr: 0 },
+    { q: "في أي غزوة استشهد حمزة بن عبد المطلب عم النبي؟", opts: ["غزوة بدر", "غزوة أحد", "غزوة الخندق", "فتح مكة"], corr: 1 },
+    { q: "كم عدد أركان الإسلام الأساسية؟", opts: ["3 أركان", "4 أركان", "5 أركان", "6 أركان"], corr: 2 },
+    { q: "من هو النبي الذي أُلقي في النار فجعلها الله برداً وسلاماً؟", opts: ["موسى عليه السلام", "إبراهيم عليه السلام", "عيسى عليه السلام", "نوح عليه السلام"], corr: 1 },
+    { q: "ما هي السورة التي تُعد تعدل ثلث القرآن الكريم؟", opts: ["سورة الفاتحة", "سورة الإخلاص", "سورة الملك", "سورة الكافرون"], corr: 1 },
+    { q: "من هو الصحابي الملقب بـ 'فاروق الأمة'؟", opts: ["أبو بكر الصديق", "عمر بن الخطاب", "عثمان بن عفان", "علي بن أبي طالب"], corr: 1 },
+    { q: "من هو الصحابي الملقب بـ 'ذو النورين'؟", opts: ["عمر بن الخطاب", "عثمان بن عفان", "علي بن أبي طالب", "الزبير بن العوام"], corr: 1 },
+    { q: "ما هي أول غزوة في الإسلام؟", opts: ["غزوة بدر الكبرى", "غزوة أحد", "غزوة الأبواء (ودان)", "غزوة الخندق"], corr: 2 },
+    { q: "في أي عام هجري وقعت غزوة بدر الكبرى؟", opts: ["السنة الأولى للهجرة", "السنة الثانية للهجرة", "السنة الثالثة للهجرة", "السنة الرابعة للهجرة"], corr: 1 },
+    { q: "من هو النبي الملقب بـ 'كليم الله'؟", opts: ["إبراهيم عليه السلام", "موسى عليه السلام", "عيسى عليه السلام", "نوح عليه السلام"], corr: 1 },
+    { q: "ما هو اسم أطول آية في القرآن الكريم والتي تُعرف بآية الدَّيْن؟", opts: ["آية الكرسي", "آية الدين في سورة البقرة", "آية النور", "خواتيم سورة البقرة"], corr: 1 },
+    { q: "في أي سورة توجد آية الكرسي العظيمة؟", opts: ["سورة آل عمران", "سورة البقرة", "سورة النساء", "سورة الأنعام"], corr: 1 },
+    { q: "كم عدد السور المكية في القرآن الكريم تقريباً؟", opts: ["86 سورة", "28 سورة", "50 سورة", "114 سورة"], corr: 0 },
+    { q: "كم عدد السور المدنية في القرآن الكريم تقريباً؟", opts: ["28 سورة", "86 سورة", "10 سور", "40 سورة"], corr: 0 },
+    { q: "من هو النبي الذي لبث في بطن الحوت؟", opts: ["يونس عليه السلام", "أيوب عليه السلام", "يوسف عليه السلام", "زكريا عليه السلام"], corr: 0 },
+    { q: "ما هي السورة التي سميت باسم كامل من سور القرآن وتتحدث عن أحكام الأسرة والنساء؟", opts: ["سورة النساء", "سورة النور", "سورة الطلاق", "سورة المجادلة"], corr: 0 },
+    { q: "ما هي السورة التي تُعرف بـ 'عروس القرآن'؟", opts: ["سورة الرحمن", "سورة يس", "سورة الملك", "سورة الواقعة"], corr: 0 },
+    { q: "من هو خاتم الأنبياء والمرسلين؟", opts: ["عيسى عليه السلام", "موسى عليه السلام", "محمد صلى الله عليه وسلم", "إبراهيم عليه السلام"], corr: 2 },
+    { q: "ما هي أول سورة نزلت بالكامل في القرآن الكريم؟", opts: ["سورة الفاتحة", "سورة المدثر", "سورة العلق", "سورة الإخلاص"], corr: 0 },
+    { q: "ما هي أول آيات نزلت على النبي محمد صلى الله عليه وسلم في غار حراء؟", opts: ["اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ", "يَا أَيُّهَا الْمُدَّثِّرُ", "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", "إِنَّا أَنْزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ"], corr: 0 },
+    { q: "من هو الملك الموكل بنزل الوحي على الأنبياء عليهم السلام؟", opts: ["إسرافيل عليه السلام", "ميكائيل عليه السلام", "جبريل عليه السلام", "مالك خازن النار"], corr: 2 },
+    { q: "ما هو اسم الحشرة أو النملة التي تكلمت في القرآن الكريم في قصة سليمان؟", opts: ["نملة سليمان", "هدهد سليمان", "دابة الأرض", "ناقة صالح"], corr: 0 },
+    { q: "من هو النبي الذي أُتي ملكاً لا ينبغي لأحد من بعده وسخر له الجن والريح؟", opts: ["داود عليه السلام", "سليمان عليه السلام", "يوسف عليه السلام", "ذو القرنين"], corr: 1 },
+    { q: "ما هي الصلاة التي تُعرف بـ 'الصلاة الوسطى' في قوله تعالى: (حَافِظُوا عَلَى الصَّلَوَاتِ وَالصَّلَاةِ الْوُسْطَىٰ)؟", opts: ["صلاة الفجر", "صلاة العصر", "صلاة المغرب", "صلاة الظهر"], corr: 1 },
+    { q: "كم عدد ركعات صلاة الفجر المفروضة؟", opts: ["ركعتان", "ثلاث ركعات", "أربع ركعات", "لا توجد ركعات مفروضة"], corr: 0 },
+    { q: "كم عدد ركعات صلاة المغرب المفروضة؟", opts: ["ركعتان", "ثلاث ركعات", "أربع ركعات", "خمس ركعات"], corr: 1 },
+    { q: "ما هي المعجزة الكبرى للنبي محمد صلى الله عليه وسلم الدائمة؟", opts: ["شق القمر", "عصا موسى", "القرآن الكريم", "الإسراء والمعراج"], corr: 2 },
+    { q: "في أي ليلة نزل القرآن الكريم في شهر رمضان؟", opts: ["ليلة القدر", "ليلة النصف من شعبان", "ليلة الإسراء والمعراج", "أول ليلة من رمضان"], corr: 0 },
+    { q: "ما هي السورة التي ذكرت فيها البسملة مرتين؟", opts: ["سورة التوبة", "سورة النمل", "سورة البقرة", "سورة هود"], corr: 1 },
+    { q: "ما هي السورة الوحيدة في القرآن الكريم التي لا تبدأ بـ 'بسم الله الرحمن الرحيم'؟", opts: ["سورة الأنفال", "سورة التوبة (براءة)", "سورة الإخلاص", "سورة الناس"], corr: 1 },
+    { q: "من هو الصحابي الذي افتدى النبي صلى الله عليه وسلم بنفسه ونام في فراشه ليلة الهجرة؟", opts: ["أبو بكر الصديق", "عمر بن الخطاب", "علي بن أبي طالب", "عثمان بن عفان"], corr: 2 },
+    { q: "ما هي المدينة التي هاجر إليها النبي محمد صلى الله عليه وسلم وأصحابه؟", opts: ["مكة المكرمة", "المدينة المنورة (يثرب)", "الطائف", "بيت القدس"], corr: 1 },
+    { q: "ما هو اسم الناقة التي أُرسلت معجزة لقوم ثمود؟", opts: ["ناقة صالح", "ناقة إبراهيم", "قصواء", "العضباء"], corr: 0 },
+    { q: "من هو النبي الذي بنى سفينة النجاة بأمر الله ليحمي المؤمنين من الطوفان؟", opts: ["نوح عليه السلام", "إبراهيم عليه السلام", "موسى عليه السلام", "هود عليه السلام"], corr: 0 },
+    { q: "كم عدد السنوات التي استمر فيها نزول القرآن الكريم مفرقاً؟", opts: ["10 سنوات", "23 سنة", "40 سنة", "15 سنة"], corr: 1 },
+    { q: "من هو الصحابي الذي لُقّب بـ 'أسد الله الغالب'؟", opts: ["حمزة بن عبد المطلب", "علي بن أبي طالب", "خالد بن الوليد", "عمر بن الخطاب"], corr: 1 },
+    { q: "من هو الصحابي الذي لُقّب بـ 'سيف الله المسلول'؟", opts: ["علي بن أبي طالب", "خالد بن الوليد", "أبو عبيدة بن الجراح", "سعد بن أبي وقاص"], corr: 1 },
+    { q: "ما هي السورة التي تُقرأ لفك السحر وحماية الإنسان وتعرف بالمعوذتين معاً؟", opts: ["الفلق والناس", "الإخلاص والفاتحة", "البقرة وآل عمران", "الملك والنبأ"], corr: 0 },
+    { q: "ما هو أول أركان الإسلام الخمسة؟", opts: ["إقام الصلاة", "إيتاء الزكاة", "شهادة أن لا إله إلا الله وأن محمداً رسول الله", "حج البيت"], corr: 2 },
+    { q: "ما هو الركن الذي يقترن غالباً بذكر الصلاة في القرآن الكريم؟", opts: ["إيتاء الزكاة", "صيام رمضان", "حج البيت", "الشهادتان"], corr: 0 },
+    { q: "ما هي السورة التي تتحدث عن قصة أصحاب الكهف؟", opts: ["سورة الكهف", "سورة مريم", "سورة طه", "سورة يوسف"], corr: 0 },
+    { q: "من هو النبي الذي أُعطي ملكاً عظيمًا وكان يكلم الحيوانات والطيور؟", opts: ["سليمان عليه السلام", "داود عليه السلام", "يحيى عليه السلام", "زكريا عليه السلام"], corr: 0 },
+    { q: "ما هي السورة التي تبدأ بالحروف المقطعة (الم) وتتحدث في بدايتها عن ألم غلبة الروم ثم فرحهم؟", opts: ["سورة الروم", "سورة البقرة", "سورة الأنبياء", "سورة الأعراف"], corr: 0 },
+    { q: "من هو الصحابي الذي أشار على النبي بحفر الخندق في غزوة الأحزاب؟", opts: ["سلمان الفارسي", "عمر بن الخطاب", "بلال بن رباح", "أبو بكر الصديق"], corr: 0 },
+    { q: "ما هي زوجة فرعون التي آمنَت بموسى عليه السلام وتربية في بيتها؟", opts: ["آسيا بنت مزاحم", "مريم العذراء", "سارة", "هاجر"], corr: 0 },
+    { q: "من هي مريم العذراء عليها السلام في القرآن الكريم؟", opts: ["ابنة عمران وأم عيسى عليه السلام", "أخت موسى عليه السلام", "زوجة زكريا", "ابنة هارون"], corr: 0 },
+    { q: "ما هي عاصمة الخلافة الإسلامية الأولى بعد وفاة النبي في عهد الخلفاء الراشدين؟", opts: ["المدينة المنورة", "مكة المكرمة", "دمشق", "بغداد"], corr: 0 },
+    { q: "من هو الخليفة الراشد الرابع والأخير في عصر الخلفاء الراشدين؟", opts: ["علي بن أبي طالب", "عثمان بن عفان", "عمر بن الخطاب", "أبو بكر الصديق"], corr: 0 },
+    { q: "ما هي الليلة التي تُعتبر خيراً من ألف شهر؟", opts: ["ليلة القدر", "ليلة الإسراء", "ليلة النصف من شعبان", "ليلة العيد"], corr: 0 },
+    { q: "ما هو الشهر الذي يأتي مباشرة بعد شهر رمضان المبارك في التقويم الهجري؟", opts: ["شوال", "ذو القعدة", "رجب", "شعبان"], corr: 0 },
+    { q: "ما هو الشهر الذي يسبق شهر رمضان المبارك مباشرة؟", opts: ["شعبان", "رجب", "جمادى الآخرة", "صفر"], corr: 0 },
+    { q: "ما هو الشهر الذي يؤدى فيه فريضة الحج في الإسلام؟", opts: ["ذو الحجة", "ذو القعدة", "محرم", "رمضان"], corr: 0 },
+    { q: "ما هي السنة الهجرية التي بدأت בה الهجرة النبوية الشريفة؟", opts: ["السنة الأولى للهجرة", "السنة العاشرة للبعثة", "سنة الفتح", "سنة الحديبية"], corr: 0 },
+    { q: "من هو النبي الذي أُمر ببناء الكعبة المشرفة مع ابنه إسماعيل؟", opts: ["إبراهيم عليه السلام", "نوح عليه السلام", "آدم عليه السلام", "موسى عليه السلام"], corr: 0 },
+    { q: "ما هو اسم الحجر المشرف الموجود في إحدى زوايا الكعبة المشرفة؟", opts: ["الحجر الأسود", "مقام إبرهيم", "حجر إسماعيل", "الركن اليماني"], corr: 0 },
+    { q: "ما هي الصلاة التي تُصلى بلا ركوع ولا سجود في الإسلام؟", opts: ["صلاة الجنازة", "صلاة العيد", "صلاة الاستسقاء", "صلاة الخسوف"], corr: 0 },
+    { q: "ما هي صلاة النافلة التي تُصلى في جوف الليل بعد النوم؟", opts: ["قيام الليل (التهجد)", "صلاة الضحى", "صلاة الشروق", "صلاة الرواتب"], corr: 0 },
+    { q: "ما هي صلاة النافلة التي تُصلى في وقت ارتفاع الضحى؟", opts: ["صلاة الضحى", "صلاة التراويح", "الوتر", "الاستخارة"], corr: 0 },
+    { q: "من هو النبي الملقب بـ 'الشيخ المرسلين'؟", opts: ["نوح عليه السلام", "إبراهيم عليه السلام", "آدم عليه السلام", "إدريس عليه السلام"], corr: 0 },
+    { q: "من هو النبي الذي صام الدهر (أو كان يصوم يوماً ويفطر يوماً)؟", opts: ["داود عليه السلام", "زكريا عليه السلام", "يحيى عليه السلام", "عيسى عليه السلام"], corr: 0 },
+    { q: "ما هي السورة التي تبدأ بـ 'سبح اسم ربك الأعلى'؟", opts: ["سورة الأعلى", "سورة الغاشية", "سورة الفجر", "سورة الشمس"], corr: 0 },
+    { q: "ما هي السورة التي تسمى بـ 'سورة القتال' أيضاً؟", opts: ["سورة محمد", "سورة الأنفال", "سورة التوبة", "سورة الفتح"], corr: 0 },
+    { q: "ما هي السورة التي تُسمى بـ 'سورة بني إسرائيل'؟", opts: ["سورة الإسراء", "سورة البقرة", "سورة المائدة", "سورة طه"], corr: 0 },
+    { q: "من هو الصحابي الذي لُقّب بـ 'ترجمان القرآن'؟", opts: ["عبد الله بن عباس", "عبد الله بن مسعود", "علي بن أبي طالب", "زيد بن ثابت"], corr: 0 },
+    { q: "من هو الصحابي الذي جُمع القرآن الكريم في عهده في مصحف واحد رسمي؟", opts: ["عثمان بن عفان", "أبو بكر الصديق", "عمر بن الخطاب", "علي بن أبي طالب"], corr: 0 },
+    { q: "من هو النبي الذي خلقه الله من غير أب ولا أم؟", opts: ["آدم عليه السلام", "عيسى عليه السلام", "إدريس", "يحيى"], corr: 0 },
+    { q: "من هو النبي الذي وُلد من أم بلا أب (معجزة إلهية)؟", opts: ["عيسى بن مريم عليهما السلام", "يحيى عليه السلام", "إسماعيل", "إسحاق"], corr: 0 },
+    { q: "ما هو اسم الوادي المقدس الذي كلم الله فيه موسى عليه السلام؟", opts: ["وادي طوى", "وادي النيل", "وادي مكة", "وادي الحجارة"], corr: 0 },
+    { q: "ما هي المعجزة التي كانت في عصا موسى عليه السلام عندما ألقاها؟", opts: ["تحولت إلى حية تسعى", "أخرجت ماءً عذباً", "أنارت كالنجوم", "شقت البحر مباشرة"], corr: 0 },
+    { q: "كم عدد الأنبياء والرسل الذين ذكروا صراحة بأسمائهم في القرآن الكريم؟", opts: ["25 نبياً ورسولاً", "100 نبي", "12 نبياً", "50 رسولاً"], corr: 0 },
+    { q: "من هو النبي الملقب بـ 'أبو البشر الثاني'؟", opts: ["نوح عليه السلام", "آدم عليه السلام", "إبراهيم عليه السلام", "إدريس عليه السلام"], corr: 0 },
+    { q: "ما هي السورة التي ذكرت فيها البسملة كاملة في آياتها وليست في البداية فقط (في قصة سليمان)؟", opts: ["سورة النمل", "سورة النحل", "سورة يوسف", "سورة سبأ"], corr: 0 },
+    { q: "ما هي أول دار فُتحت للدعوة الإسلامية السرية في مكة المكرمة؟", opts: ["دار الأرقم بن أبي الأرقم", "دار الندوة", "دار أبي بكر", "المسجد الحرام"], corr: 0 },
+    { q: "في أي عام توفي النبي محمد صلى الله عليه وسلم؟", opts: ["السنة الحادية عشرة للهجرة (11 هجري)", "السنة العاشرة للهجرة", "السنة الثامنة للهجرة", "السنة الثالثة عشرة للهجرة"], corr: 0 },
+    { q: "ما هي أطول آية في القرآن الكريم تتعلق بأي موضوع؟", opts: ["آية الدين في سورة البقرة", "آية الكرسي", "أول آية من سورة المزمل", "آية النور"], corr: 0 },
+    { q: "من هو الصحابي الذي كان أمين هذه الأمة في حفظ الأسرار والأموال؟", opts: ["أبو عبيدة بن الجراح", "حذيفة بن اليمان", "زيد بن ثابت", "عثمان بن عفان"], corr: 0 },
+    { q: "ما هو اسم الغار الذي كان يختبئ فيه النبي صلى الله عليه وسلم وأبو بكر ليلة الهجرة؟", opts: ["غار ثور", "غار حراء", "غار الكهف", "غار الصفا"], corr: 0 },
+    { q: "ما هي السورة التي تحث على إطعام الطعام وذكرت فيها كلمة 'المسكيناً ذي متربة'؟", opts: ["سورة البلد", "سورة الماعون", "سورة القارعة", "سورة العصر"], corr: 0 },
+    { q: "ما هو اسم الأنهار الجارية التي وعد الله بها عباده المؤمنين في الجنة؟", opts: ["أنهار من ماء ولبن وخمر وعسل", "أنهار من ماء عذب فقط", "أنهار من ذهب وفضة", "أنهار من لؤلؤ ومرجان"], corr: 0 },
+    { q: "من هو الملك الموكل بنفخ الصور يوم القيامة؟", opts: ["إسرافيل عليه السلام", "جبريل عليه السلام", "ميكائيل عليه السلام", "عزرائيل"], corr: 0 },
+    { q: "ما هو اسم الجنة العالية التي وعد الله بها المتقين وتعتبر أعلى درجات الجنة؟", opts: ["الفردوس الأعلى", "جنة عدن", "دار السلام", "النعيم"], corr: 0 },
+    { q: "ما هي السورة التي تتحدث عن حادثة الإفك التي اتهمت فيها أم المؤمنين عائشة رضي الله عنها؟", opts: ["سورة النور", "سورة الأحزاب", "سورة التحريم", "سورة الحجرات"], corr: 0 },
+    { q: "من هو الصحابي الجليل الذي جمع القرآن الكريم كاملاً وكتبه في صحف بأمر أبي بكر ثم عثمان؟", opts: ["زيد بن ثابت", "عمر بن الخطاب", "علي بن أبي طالب", "معاوية بن أبي سفيان"], corr: 0 },
+    { q: "ما هي السورة التي تبدأ بوصف الصافات صفاً؟", opts: ["سورة الصافات", "سورة الملك", "سورة يس", "سورة الجن"], corr: 0 },
+    { q: "ما هو اسم الصحابي الذي كان يؤذن بصوت عذب وجميل في مسجد النبي؟", opts: ["بلال بن رباح", "عبد الله بن عمر", "أبو هريرة", "سعد بن معاذ"], corr: 0 },
+    { q: "ما هو المعنى الحقيقي لكلمة 'الإسلام' في اللغة العربية؟", opts: ["الاستسلام لله بالتوحيد والانقياد له بالطاعة", "السلام والمسالمة فقط", "العبادة السرية", "التقوى الخالصة"], corr: 0 },
+    { q: "ما هو اسم أول مسجد بني في الإسلام في المدينة المنورة عند وصول النبي؟", opts: ["مسجد قباء", "المسجد النبوي", "مسجد القبلتين", "مسجد الجمعة"], corr: 0 },
+    { q: "ما هو المسجد الذي تحولت القبلة فيه من بيت المقدس إلى الكعبة المشرفة؟", opts: ["مسجد القبلتين", "مسجد قباء", "المسجد الأقصى", "المسجد النبوي"], corr: 0 },
+    { q: "كم عدد الصلوات المفروضة في اليوم والليلة على المسلم؟", opts: ["خمس صلوات", "ثلاث صلوات", "سبع صلوات", "صلاة واحدة"], corr: 0 },
+    { q: "ما هو اسم الكتاب السماوي الذي أنزل على سيدنا عيسى عليه السلام؟", opts: ["الإنجيل", "التوراة", "الزبور", "الصحف"], corr: 0 },
+    { q: "ما هو اسم الكتاب السماوي الذي أنزل على سيدنا موسى عليه السلام؟", opts: ["التوراة", "الإنجيل", "الزبور", "الفرقان"], corr: 0 },
+    { q: "ما هو اسم الكتاب السماوي الذي أنزل على سيدنا داود عليه السلام؟", opts: ["الزبور", "التوراة", "الإنجيل", "الصحف"], corr: 0 }
+];const educationQuestions100 = [
+    { q: "ما هي عاصمة جمهورية العراق؟", opts: ["البصرة", "أربيل", "بغداد", "الموصل"], corr: 2 },
+    { q: "في أي قارة تقع دولة اليابان؟", opts: ["أفريقيا", "آسيا", "أوروبا", "أستراليا"], corr: 1 },
+    { q: "من هو مخترع المصباح الكهربائي؟", opts: ["توماس إديسون", "أينشتاين", "نيوتن", "غراهام بل"], corr: 0 },
+    { q: "ما هو الجهاز المستخدم لقياس ضغط الدم؟", opts: ["الميزان", "الترمومتر", "جهاز قياس الضغط", "البارومتر"], corr: 2 },
+    { q: "كم عدد أضلاع الشكل الرباعي؟", opts: ["3 أضلاع", "4 أضلاع", "5 أضلاع", "6 أضلاع"], corr: 1 },
+    { q: "ما هي عاصمة دولة الإمارات العربية المتحدة؟", opts: ["دبي", "أبوظبي", "الشارقة", "عجمان"], corr: 1 },
+    { q: "ما هي اللغة الرسمية في البرازيل؟", opts: ["الأسبانية", "البرتغالية", "الإنجليزية", "الفرنسية"], corr: 1 },
+    { q: "ما هي عاصمة المملكة العربية السعودية؟", opts: ["جدة", "الرياض", "مكة المكرمة", "الدمام"], corr: 1 },
+    { q: "من هو مؤلف رواية البؤساء الشهيرة؟", opts: ["فيكتور هوغو", "وليام شكسبير", "تولستوي", "أغاثا كريستي"], corr: 0 },
+    { q: "ما هو العنصر الكيميائي الذي يرمز له بالرمز 'Au'؟", opts: ["الفضة", "الذهب", "النحاس", "الحديد"], corr: 1 },
+    { q: "ما هي عاصمة فرنسا؟", opts: ["لندن", "باريس", "برلين", "مدريد"], corr: 1 },
+    { q: "ما هو أطول نهر في العالم؟", opts: ["نهر النيل", "نهر الأمازون", "نهر المسيسيبي", "نهر دجلة"], corr: 0 },
+    { q: "في أي قارة تقع مصر؟", opts: ["آسيا", "أفريقيا", "أوروبا", "أمريكا الجنوبية"], corr: 1 },
+    { q: "ما هو الغاز الأكثر وفراً في الغلاف الجوي الأرضي؟", opts: ["الأكسجين", "النيتروجين", "ثاني أكسيد الكربون", "الهيدروجين"], corr: 1 },
+    { q: "من هو صانع نظرية النسبية العامة؟", opts: ["إسحاق نيوتن", "ألبرت أينشتاين", "نيكولا تسلا", "غاليليو"], corr: 1 },
+    { q: "ما هي عاصمة إيطاليا؟", opts: ["روما", "ميلانو", "فلورنس", "البندقية"], corr: 0 },
+    { q: "ما هو أكبر محيط في العالم؟", opts: ["المحيط الأطلسي", "المحيط الهندي", "المحيط الهادئ", "المحيط المتجمد الشمالي"], corr: 2 },
+    { q: "ما هي عاصمة جمهورية مصر العربية؟", opts: ["الإسكندرية", "القاهرة", "الجيزة", "الأقصر"], corr: 1 },
+    { q: "من هو مخترع الهاتف?", opts: ["ألكسندر غراهام بل", "توماس إديسون", "نيكولا تسلا", "ماركوني"], corr: 0 },
+    { q: "ما هي عاصمة سلطنة عمان؟", opts: ["مسقط", "صلالة", "صُحر", "نزوى"], corr: 0 },
+    { q: "كم عدد قارات العالم؟", opts: ["5 قارات", "6 قارات", "7 قارات", "8 قارات"], corr: 2 },
+    { q: "ما هي عاصمة دولة الكويت؟", opts: ["الك الكويت", "مدينة الكويت", "الجهراء", "السالمية"], corr: 1 },
+    { q: "ما هو المعدن السائل الوحيد في درجة حرارة الغرفة؟", opts: ["الزئبق", "الحديد", "الذهب", "الفضة"], corr: 0 },
+    { q: "ما هي عاصمة المملكة الأردنية الهاشمية؟", opts: ["إربد", "عمان", "الزرقاء", "العقبة"], corr: 1 },
+    { q: "من هو مكتشف قانون الجاذبية الأرضية؟", opts: ["إسحاق نيوتن", "أينشتاين", "أرخميدس", "پاسكال"], corr: 0 },
+    { q: "ما هي عاصمة ألمانيا؟", opts: ["ميونخ", "فرانكفورت", "برلين", "هامبورغ"], corr: 2 },
+    { q: "ما هو رمز العنصر الكيميائي للماء؟", opts: ["H2O", "CO2", "O2", "NaCl"], corr: 0 },
+    { q: "ما هي عاصمة إسبانيا؟", opts: ["برشلونة", "مدريد", "إشبيلية", "فالنسيا"], corr: 1 },
+    { q: "من هو الرحالة العربي الشهير صاحب كتاب 'تحفة النظار في غرائب الأمصار وعجائب الأسفار'؟", opts: ["ابن بطوطة", "ابن خلدون", "الإدريسي", "المسعودي"], corr: 0 },
+    { q: "ما هي عاصمة روسيا؟", opts: ["سان بطرسبرغ", "موسكو", "كازان", "سيبيريا"], corr: 1 },
+    { q: "كم عدد ألوان الطيف الشمسي (قزح)؟", opts: ["5 ألوان", "6 ألوان", "7 ألوان", "8 ألوان"], corr: 2 },
+    { q: "ما هي عاصمة الصين؟", opts: ["شانغهاي", "بكين", "هونغ كونغ", "ووهان"], corr: 1 },
+    { q: "ما هو الكوكب الذي يطلق عليه كوكب الحياة؟", opts: ["الأرض", "المريخ", "الزهرة", "المشتري"], corr: 0 },
+    { q: "ما هي عاصمة تركيا؟", opts: ["إسطنبول", "أنقرة", "إزمير", "أنطاليا"], corr: 1 },
+    { q: "من هو مؤسس علم الاجتماع الحديث وصاحب 'المقدمة' الشهيرة؟", opts: ["ابن خلدون", "ابن سينا", "الفارابي", "ابن رشد"], corr: 0 },
+    { q: "ما هي عاصمة الهند؟", opts: ["مومباي", "نيودلهي", "بنغالور", "كلكتا"], corr: 1 },
+    { q: "ما هي عاصمة الجمهورية العربية السورية؟", opts: ["حلب", "دمشق", "حمص", "اللاذقية"], corr: 1 },
+    { q: "ما هي العملة الرسمية لدولة بريطانيا؟", opts: ["الدولار", "اليورو", "الجنيه الإسترليني", "الفرنك"], corr: 2 },
+    { q: "ما هي عاصمة الجمهورية اللبنانية؟", opts: ["طرابلس", "بيروت", "صيدا", "جبيل"], corr: 1 },
+    { q: "من هو الكاتب المسرحي الإنجليزي الأشقر في التاريخ ومؤلف 'روميو وجولييت'؟", opts: ["وليام شكسبير", "تشارلز ديكنز", "مارك توين", "فيكتور هوغو"], corr: 0 },
+    { q: "ما هي عاصمة الجزائر؟", opts: ["وهران", "الجزائر العاصمة", "قسنطينة", "عنابة"], corr: 1 },
+    { q: "ما هو الحيوان الذي يُسمى بـ 'سفينة الصحراء'؟", opts: ["الحصان", "الجمل", "الفيل", "الخروف"], corr: 1 },
+    { q: "ما هي عاصمة تونس؟", opts: ["سوسة", "صفاقس", "تونس العاصمة", "بنزرت"], corr: 2 },
+    { q: "كم عدد عظام جسم الإنسان البالغ؟", opts: ["206 عظمة", "300 عظمة", "150 عظمة", "250 عظمة"], corr: 0 },
+    { q: "ما هي عاصمة المغرب؟", opts: ["الدار البيضاء", "مراكش", "الرباط", "فاس"], corr: 2 },
+    { q: "ما هو أكبر بحر مغلق في العالم (أو بحر خزر)؟", opts: ["بحر قزوين", "البحر الميت", "البحر الأحمر", "البحر الأسود"], corr: 0 },
+    { q: "ما هي عاصمة قطر؟", opts: ["الخور", "الدوحة", "الوكرة", "لوسيل"], corr: 1 },
+    { q: "من هو مكتشف أمريكا عام 1492؟", opts: ["كريستوفر كولومبوس", "فاسكو دا جاما", "ماجلان", "أمريجو فسبوتشي"], corr: 0 },
+    { q: "ما هي عاصمة البحرين؟", opts: ["المحرق", "المنامة", "رفاع", "المدينة الشمالية"], corr: 1 },
+    { q: "ما هي أصغر قارات العالم مساحة؟", opts: ["أوروبا", "أستراليا (أوقيانوسيا)", "أنتاركتيكا", "إفريقيا"], corr: 1 },
+    { q: "ما هي عاصمة فلسطين التاريخية؟", opts: ["القدس الشريف", "غزة", "رام الله", "حيفا"], corr: 0 },
+    { q: "ما هي عاصمة السودان؟", opts: ["بورتسودان", "الخرطوم", "أم درمان", "ود مدني"], corr: 1 },
+    { q: "من هو أول رئيس للولايات المتحدة الأمريكية؟", opts: ["أبراهام لينكولن", "جورج واشنطن", "توماس جيفرسون", "جون آدامز"], corr: 1 },
+    { q: "ما هي عاصمة ليبيا؟", opts: ["بنغازي", "طرابلس", "مصراتة", "سبها"], corr: 1 },
+    { q: "ما هو الجهاز المسؤول عن ضخ الدم في جسم الإنسان؟", opts: ["المخ", "الرئة", "القلب", "الكبد"], corr: 2 },
+    { q: "ما هي عاصمة اليمن؟", opts: ["عدن", "صنعاء", "تعز", "المكلا"], corr: 1 },
+    { q: "ما هو العنصر الأساسي الذي يدخل في تركيب الألماس؟", opts: ["الكربون", "الذهب", "السيليكون", "الحديد"], corr: 0 },
+    { q: "ما هي عاصمة الصومال؟", opts: ["مقديشو", "بربرة", "هرجيسا", "كيسمايو"], corr: 0 },
+    { q: "من هو رائد الفضاء الذي رسم أول خريطة دقيقة للعالم وصاحب كتاب 'نزهة المشتاق في اختراق الآفاق'؟", opts: ["الإدريسي", "ابن بطوطة", "البيروني", "ابن سينا"], corr: 0 },
+    { q: "ما هي عاصمة موريتانيا؟", opts: ["نواذيبو", "نواكشوط", "الروسو", "ازويرات"], corr: 1 },
+    { q: "ما هو اسم العملية التي تصنع بها النباتات غذاءها باستخدام الضوء؟", opts: ["التمثيل الضوئي (البناء الضوئي)", "التنفس الخلوي", "التحلل الحيوي", "التأين"], corr: 0 },
+    { q: "ما هي عاصمة جيبوتي؟", opts: ["مدينة جيبوتي", "علي صبيح", "تاتجو", "دوبال"], corr: 0 },
+    { q: "كم يبلغ عدد درجات الزاوية القائمة في الهندسة؟", opts: ["90 درجة", "180 درجة", "360 درجة", "45 درجة"], corr: 0 },
+    { q: "ما هي عاصمة جزر القمر؟", opts: ["موروني", "فومبوني", "موتسامودو", "دزاني"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أطول رقبة في العالم؟", opts: ["الفيل", "الزرافة", "الحصان", "الكنغر"], corr: 1 },
+    { q: "ما هي عاصمة كندا؟", opts: ["تورونتو", "فانكوفر", "أوتاوا", "مونتريال"], corr: 2 },
+    { q: "ما هي عاصمة البرازيل؟", opts: ["ريو دي جانيرو", "ساو باولو", "برازيليا", "سالفادور"], corr: 2 },
+    { q: "ما هي عاصمة الأرجنتين؟", opts: ["بوينس آيرس", "قرطبة", "روزاريو", "مندوزا"], corr: 0 },
+    { q: "ما هو أصغر طائر في العالم؟", opts: ["العصفور", "طائر الطنان", "اليمام", "البلبل"], corr: 1 },
+    { q: "ما هي عاصمة المكسيك؟", opts: ["مكسيكو سيتي", "غوادالاخارا", "مونتيري", "تويجوانا"], corr: 0 },
+    { q: "من هو مخترع الطباعة الحديثة بالحروف المتحركة؟", opts: ["يوهانس غوتنبرغ", "توماس إديسون", "ألفونسو", "لويس پاستور"], corr: 0 },
+    { q: "ما هي عاصمة إيران؟", opts: ["أصفهان", "شيراز", "طهران", "تبريز"], corr: 2 },
+    { q: "ما هو أكبر حيوان ثديي بحري في العالم؟", opts: ["القرش الأبيض", "الحوت الأزرق", "الدلفين", "فيل البحر"], corr: 1 },
+    { q: "ما هي عاصمة باكستان؟", opts: ["كراتشي", "إسلام آباد", "لاهور", "بيشاور"], corr: 1 },
+    { q: "ما هو الجهاز المسؤول عن تنقية الدم في جسم الإنسان وإحداث البول؟", opts: ["القلب", "الكليتان", "الكبد", "الطحال"], corr: 1 },
+    { q: "ما هي عاصمة أفغانستان؟", opts: ["قندهار", "هرات", "كابول", "مزار الشريف"], corr: 2 },
+    { q: "من هو العالم المسلم الذي يُلقب بـ 'أبو الطب' في أوروبا وصاحب كتاب 'القانون في الطب'؟", opts: ["ابن سينا", "الرازي", "الزهراوي", "ابن الهيثم"], corr: 0 },
+    { q: "ما هي عاصمة كوريا الجنوبية؟", opts: ["بوسان", "سيول", "إنشون", "دايغو"], corr: 1 },
+    { q: "ما هي عاصمة كوريا الشمالية؟", opts: ["بيونغ يانغ", "كايسونغ", "بيونغ سيونغ", "وونسَان"], corr: 0 },
+    { q: "ما هو الكوكب الذي يطلق عليه الكوكب الأزرق؟", opts: ["الأرض", "نبتون", "أورانوس", "المشتري"], corr: 0 },
+    { q: "ما هي عاصمة سويسرا؟", opts: ["زيورخ", "جنيف", "برن", "بازل"], corr: 2 },
+    { q: "ما هو المعدن الثمين الذي يُرمز له بالرمز الكيميائي 'Ag'؟", opts: ["الذهب", "الفضة", "النحاس", "البلاتين"], corr: 1 },
+    { q: "ما هي عاصمة السويد؟", opts: ["ستوكهولم", "غوتنبرغ", "مالمو", "أوبسالا"], corr: 0 },
+    { q: "من هو مؤسس علم البصريات الحديث ومؤلف كتاب 'المناظير'؟", opts: ["الحسن بن الهيثم", "جابر بن حيان", "الكندي", "الخوارزمي"], corr: 0 },
+    { q: "ما هي عاصمة النرويج؟", opts: ["برغن", "أوسلو", "تروندهايم", "ستاڤانغر"], corr: 1 },
+    { q: "ما هو أكبر خليج في العالم؟", opts: ["خليج المكسيك", "الخليج العربي", "خليج البنغال", "خليج هادسون"], corr: 2 },
+    { q: "ما هي عاصمة هولندا؟", opts: ["روتردام", "أمستردام", "لاهاي", "أوترخت"], corr: 1 },
+    { q: "ما هي عاصمة اليونان؟", opts: ["ثيسالونيكي", "أثينا", "باتراس", "هيراكليون"], corr: 1 },
+    { q: "من هو العالم الرياضي والفلكي المسلم الذي يُعتبر مخترع علم الجبر ومؤسس الخوارزميات؟", opts: ["محمد بن موسى الخوارزمي", "عمر الخيام", "البيروني", "ثابت بن قرة"], corr: 0 },
+    { q: "ما هي عاصمة البرتغال؟", opts: ["بورتو", "لشبونة", "كويمبرا", "فارو"], corr: 1 },
+    { q: "ما هي عاصمة بولندا؟", opts: ["كراكوف", "وارسو", "غدانسك", "فروتسواف"], corr: 1 },
+    { q: "ما هو أسرع حيوان بحري أو كائن في المحيطات؟", opts: ["الحوت الأزرق", "سمكة القرش الأبيض", "سمكة أبو سيف", "الدلفين"], corr: 2 },
+    { q: "ما هي عاصمة النمسا؟", opts: ["سالزبورغ", "فيينا", "غراتس", "إنسبروك"], corr: 1 },
+    { q: "ما هي عاصمة بلجيكا (ومقر الاتحاد الأوروبي)؟", opts: ["أنترويرب", "بروكسل", "غنت", "بروج"], corr: 1 },
+    { q: "من هو العالم المسلم البارع في الجراحة ومخترع الأدوات الجراحية الحديثة؟", opts: ["الزهراوي", "ابن سينا", "الرازي", "ابن النفيس"], corr: 0 },
+    { q: "ما هي عاصمة الدنمارك؟", opts: ["آرهوس", "كوبنهاغن", "أودنسه", "ألبورغ"], corr: 1 },
+    { q: "ما هي عاصمة فنلندا؟", opts: ["هلسنكي", "إسبو", "تامبيري", "فانتا"], corr: 0 },
+    { q: "ما هو العنصر الكيميائي الأكثر وفرة في قشرة كوكب الأرض؟", opts: ["الأكسجين", "السيليكون", "الحديد", "الألومنيوم"], corr: 0 },
+    { q: "ما هي عاصمة جمهورية إيرلندا؟", opts: ["دبلن", "كورك", "غالواي", "ليمريك"], corr: 0 },
+    { q: "من هو مكتشف الدورة الدموية الصغرى في جسم الإنسان؟", opts: ["ابن النفيس", "ابن سينا", "ويليام هارفي", "الرازي"], corr: 0 }
+];
+const iraqHistoryQuestions100 = [
+    { q: "ما هو الاسم التاريخي القديم لدولة العراق في العصور السومرية والبابلية؟", opts: ["بلاد ما بين النهرين (ميسوبوتاميا)", "شبه الجزيرة", "بلاد الشام", "الهلال الخصيب"], corr: 0 },
+    { q: "من هو الملك البابلي الشهير صاحب المسلة القانونية الشهيرة التي تضم أول شريعة قوانين متكاملة؟", opts: ["نبوخذ نصر الثاني", "حمورابي", "سرجون الأكدي", "سنحاريب"], corr: 1 },
+    { q: "في أي مدينة تاريخية عراقية وُجدت أقدم كتابة مسمارية في التاريخ؟", opts: ["بابل", "أوروك (الوركاء)", "نينوى", "أشور"], corr: 1 },
+    { q: "من هو القائد المسلم الذي فتح مدينة المدائن (طيسطون) عاصمة الفرس في العراق؟", opts: ["سعد بن أبي وقاص", "خالد بن الوليد", "المثنى بن حارثة", "عمر بن الخطاب"], corr: 0 },
+    { q: "في أي سنة هجرية تم تأسيس مدينة بغداد العريقة على يد الخليفة المنصور؟", opts: ["145 هجري", "132 هجري", "149 هجري", "155 هجري"], corr: 0 },
+    { q: "ما هو اللقب التاريخي الشهير الذي أُطلق على مدينة بغداد في عصر الدولة العباسية؟", opts: ["مدينة السلام (دار السلام)", "عروس الشرق", "الزهراء", "عاصمة الرشيد"], corr: 0 },
+    { q: "من هو الخليفة العباسي الذي بلغ العصر الذهبي لبغداد في عهده؟", opts: ["أبو جعفر المنصور", "هارون الرشيد", "المأمون", "المتصم بالله"], corr: 1 },
+    { q: "ما هي الحضارة القديمة التي اشترت ببناء حدائق بابل المعلقة إحدى عجائب الدنيا السبع؟", opts: ["الحضارة الآشورية", "الحضارة البابلية الحديثة", "الحضارة السومرية", "الحضارة الأكدية"], corr: 1 },
+    { q: "من هو المؤسس الإمبراطورية الأكدية وأول إمبراطور في التاريخ البشري؟", opts: ["سرجون الأكدي", "حمورابي", "نبوخذ نصر", "جلجامش"], corr: 0 },
+    { q: "ما هو اسم الملحمة الشعرية السومرية الشهيرة التي تعتبر أقدم أثر أدبي في تاريخ البشرية وتتحدث عن ملك أوروك؟", opts: ["ملحمة جلجامش", "ملحمة الخليقة البابلية", "طوفان سومر", "قصيدة إينانا"], corr: 0 },
+    { q: "من هو القائد المغولي الذي قام بغزو بغداد وإسقاط الخلافة العباسية عام 1258 م؟", opts: ["هولاكو خان", "جنكيز خان", "تيمورلنك", "قبلاي خان"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي اشتهرت بكونها عاصمة للدولة الآشورية وتضم مكتبة آشور بانيبال الشهيرة؟", opts: ["نينوى", "بابل", "الحضر", "سامراء"], corr: 0 },
+    { q: "في أي عام ميلادي تم تأسيس المملكة العراقية الحديثة وتتويج الملك فيصل الأول ملكاً على العراق؟", opts: ["1921 م", "1920 م", "1932 م", "1958 م"], corr: 0 },
+    { q: "في أي عام انضم العراق رسمياً إلى عصبة الأمم المتحدة كدولة مستقلة ومكتملة السيادة؟", opts: ["1932 م", "1921 م", "1945 م", "1958 م"], corr: 0 },
+    { q: "من هو أول ملك يحكم العراق الحديث بعد تأسيس المملكة العراقية؟", opts: ["الملك فيصل الأول", "الملك غازي", "الملك فيصل الثاني", "نوري السعيد"], corr: 0 },
+    { q: "ما هي المدينة العراقية التاريخية التي تتميز بآثارها الرومانية البارزة وتعتبر مدينة دائرية فريدة من نوعها؟", opts: ["الحضر (اتلرا)", "بابل", "أور", "السامراء"], corr: 0 },
+    { q: "من هو الملك البابلي الذي بنى برج بابل وأسر اليهود في ما يُعرف بالسبي البابلي؟", opts: ["نبوخذ نصر الثاني", "حمورابي", "نبوبولاسر", "سرجون"], corr: 0 },
+    { q: "ما هو اسم الزقورة الشهيرة التي تقع في مدينة أور الأثرية جنوب العراق؟", opts: ["زقورة أور", "زقورة بابل", "زقورة أوروك", "زقورة نيبور"], corr: 0 },
+    { q: "من هو الخليفة العباسي الذي بنى مدينة سامراء وجعلها عاصمة للخلافة قبل أن تعود بغداد؟", opts: ["المعتصم بالله", "المتكتل", "الواثق بالله", "هارون الرشيد"], corr: 0 },
+    { q: "ما هو اسم الثورة العراقية الكبرى ضد الاحتلال البريطاني والتي اندلعت عام 1920؟", opts: ["ثورة العشرين", "ثورة 14 تموز", "ثورة 14 رمضان", "ثورة الشريف حسين"], corr: 0 },
+    { q: "من هو قائد ثورة 14 تموز 1958 التي أنهت الحكم الملكي في العراق وأعلنت الجمهورية؟", opts: ["عبد الكريم قاسم", "عبد السلام عارف", "بكر صدقي", "رشيد عالي الكيلاني"], corr: 0 },
+    { q: "ما هو اسم النهرين العظيمين اللذين طالما سمي العراق بسببهما؟", opts: ["دجلة والفرات", "نيل والفرات", "دجلة وكارون", "دجلة والزاب"], corr: 0 },
+    { q: "في أي محافظة عراقية تقع آثار مدينة أور التاريخية ومولد النبي إبراهيم عليه السلام؟", opts: ["محافظة ذي قار (ناصرية)", "محافظة بابل", "محافظة بغداد", "محافظة البصرة"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي تُعرف بـ 'أم الفضائل' و'الحدباء'؟", opts: ["الموصل", "البصرة", "أربيل", "كركوك"], corr: 0 },
+    { q: "من هو الشاعر العباسي الكبير الملقب بـ 'أبو الطيب المتنبي' والذي ولد في الكوفة؟", opts: ["أبو الطيب المتنبي", "أبو العلاء المعري", "البحتري", "الفرزدق"], corr: 0 },
+    { q: "ما هو اسم الإله الرئيس في الديانة البابلية والقديمة والذي كان يُعبد في بابل؟", opts: ["مردوخ", "عشتار", "إنليل", "شماش"], corr: 0 },
+    { q: "ما هي إلهة الحب والحرب الجميلة في الأساطير العراقية القديمة؟", opts: ["عشتار (إنانا)", "إيزيس", "أثينا", "عشتروت"], corr: 0 },
+    { q: "من هو الكاتب والعالم العراقي القديم الذي ابتكر الحرف المسماري على ألواح الطين؟", opts: ["السومريون", "البابليون", "الآشوريون", "الأكديون"], corr: 0 },
+    { q: "ما هي المدينة التاريخية التي بناها الخليفة المنصور وتُعرف بالمدينة المدورة؟", opts: ["بغداد المدورة", "سامراء", "الكوفة", "البصرة"], corr: 0 },
+    { q: "من هو مؤسس مدينة البصرة كأول مصر (قاعدة) إسلامية خارج الجزيرة العربية عام 14 هجري؟", opts: ["عتبة بن غزوان", "سعد بن أبي وقاص", "عمر بن الخطاب", "المثنى بن حارثة"], corr: 0 },
+    { q: "من هو مؤسس مدينة الكوفة العريقة في العراق عام 17 هجري؟", opts: ["سعد بن أبي وقاص", "عتبة بن غزوان", "علي بن أبي طالب", "الزياد بن أبيه"], corr: 0 },
+    { q: "ما هو اسم الحاكم العباسي الذي أسس بيت الحكمة في بغداد وكان مركزاً علمياً عالمياً للترجمة والعلوم؟", opts: ["هارون الرشيد والمأمون", "المنصور", "المعتصم", "المهدي"], corr: 0 },
+    { q: "ما هو اسم العالم الرياضي والفلكي العراقي الشهير من بغداد الذي وضع أسس الخوارزميات والجبر؟", opts: ["محمد بن موسى الخوارزمي", "ابن الهيثم", "الكندي", "البتاني"], corr: 0 },
+    { q: "من هو الفيلسوف العربي الإسلامي الشهير الملقب بـ 'فيلسوف العرب' والذي عاش في بغداد؟", opts: ["يعقوب بن إسحاق الكندي", "الفارابي", "ابن سينا", "الغزالي"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي تضم مرقد الإمام علي بن أبي طالب عليه السلام؟", opts: ["النجف الأشرف", "كربلاء المقدسة", "بغداد", "سامراء"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي تشهد سنوياً أضخم تجمع بشري في العالم في زيارة الأربعين؟", opts: ["كربلاء المقدسة", "النجف", "الكاظمية", "سامراء"], corr: 0 },
+    { q: "ما هو اسم القائد العراقي الذي قاد حركة الاستقلال الوطنية وأصبح رئيساً للوزراء في العهد الملكي عدة مرات؟", opts: ["نوري السعيد", "رشيد عالي الكيلاني", "ياسين الهاشمي", "بكر صدقي"], corr: 0 },
+    { q: "في أي عام تأسست جامعة بغداد كأول جامعة حديثة رسمية في العراق؟", opts: ["1957 م", "1950 م", "1960 م", "1945 م"], corr: 0 },
+    { q: "ما هو اسم المتحف العراقي العريق في بغداد الذي يضم أثمن آثار بلاد ما بين النهرين؟", opts: ["المتحف الوطني العراقي (المتحف العراقي)", "متحف بغداد الحضاري", "متحف الموصل", "متحف بابل"], corr: 0 },
+    { q: "ما هو اسم الجسر التاريخي القديم في بغداد الذي يربط الرصافة بالكرخ ويُعد رمزاً للمدينة؟", opts: ["جسر الشهداء (الجسر العتيق / الجسر القديم)", "جسر الأئمة", "جسر الجمهورية", "جسر الصرافية"], corr: 0 },
+    { q: "من هو الشاعر العراقي المعاصر الكبير الملقب بـ 'رائد الشعر الحر' في الوطن العربي؟", opts: ["بناز السياب", "الجواهري", "نازك الملائكة", "المتنبي"], corr: 0 },
+    { q: "من هو أمير الشعراء العراقيين الكلاسيكيين الكبير محمد مهدي الجواهري؟", opts: ["محمد مهدي الجواهري", "بدر شاكر السياب", "معروف الرصافي", "جميل صدقي الزهاوي"], corr: 0 },
+    { q: "ما هو اسم القلعة التاريخية الشهيرة في مدينة أربيل بكوردستان العراق والتي تُعد من أقدم المدن المأهولة بلا انقطاع؟", opts: ["قلعة أربيل", "قلعة كركوك", "قلعة باشطابيا", "قلعة شيروان"], corr: 0 },
+    { q: "ما هي المدينة العراقية الشهيرة بقلعتها العثمانية وتنوعها العرقي وتعتبر عاصمة النفط التاريخية؟", opts: ["كركوك", "الموصل", "البصرة", "السليمانية"], corr: 0 },
+    { q: "ما هو اسم معبد الآشوريين الشهير في مدينة خورسباد (دور شروكين) التي بناها الملك سرجون الثاني؟", opts: ["دور شروكين", "نمرود", "الحضر", "الكاظمية"], corr: 0 },
+    { q: "ما هو اسم الإمبراطورية التي هزمت البابليين القدامى بقيادة قورش الكبير عام 539 ق.م؟", opts: ["الإمبراطورية الأخمينية (الفارسية)", "الإمبراطورية الرومانية", "الإمبراطورية اليونانية", "الإمبراطورية البيزنطية"], corr: 0 },
+    { q: "من هو القائد اليوناني الشهير الذي غزا الإمبراطورية الفارسية ودخل بابل وتوفي فيها عام 323 ق.م؟", opts: ["الإسكندر الأكبر المقدوني", "يوليوس قيصر", "هنيبال", "بومبي"], corr: 0 },
+    { q: "ما هو اسم الدولة التي حكمت العراق بعد الإسكندر الأكبر وتأسست على يد أحد قادته؟", opts: ["الدولة السلوقية", "الدولة الفرثية", "الدولة الساسانية", "الدولة البابلية"], corr: 0 },
+    { q: "ما هي المدينة العراقية القديمة التي كانت عاصمة للمملكة الحضرية في الصحراء؟", opts: ["مدينة الحضر", "توتل", "المرج", "الفرات"], corr: 0 },
+    { q: "في أي سنة هجرية وقعت معركة القادسية الفاصلة بين المسلمين والفرس على أرض العراق؟", opts: ["15 هجري", "10 هجري", "20 هجري", "12 هجري"], corr: 0 },
+    { q: "من هو الصحابي الجليل الذي أسس مدينة الكوفة بأمر من الخليفة عمر بن الخطاب؟", opts: ["سعد بن أبي وقاص", "عمار بن ياسر", "حذيفة بن اليمان", "عبد الله بن مسعود"], corr: 0 },
+    { q: "ما هو اسم النهر التاريخي الثالث في العراق والذي يقع في إقليم كوردستان ويُعتبر رافداً رئيسياً لدجلة؟", opts: ["نهر الزاب الكبير (والصغير)", "نهر العظيم", "نهر ديالي", "نهر الخابور"], corr: 0 },
+    { q: "ما هي أقدم جامعة أو مدرسة دينية علمية كبرى تأسست في النجف الأشرف؟", opts: ["حوزة النجف العلمية", "المدرسة النظامية", "المدرسة المستنصرية", "جامعة الكوفة التاريخية"], corr: 0 },
+    { q: "ما هو اسم المدرسة التاريخية العباسية الشهيرة في بغداد التي كانت تدريس الفقه والمذاهب الأربعة والطب؟", opts: ["المدرسة المستنصرية", "المدرسة النظامية", "المدرسة المرشدية", "دار الحكمة"], corr: 0 },
+    { q: "من هو الخليفة العباسي الذي أمر ببناء المدرسة المستنصرية العريقة في بغداد عام 1227 م؟", opts: ["المستنصر بالله", "الرشيد", "المأمون", "المهدي"], corr: 0 },
+    { q: "ما هو اسم الباب التاريخي الشهير لسور بغداد القديم والذي يُعتبر الباب الوحيد المتبقي من أسوار بغداد العباسية؟", opts: ["باب المعظم (أو باب الشيخ / الباب الوسطاني)", "باب الشام", "باب خراسان", "باب البصرة"], corr: 0 },
+    { q: "من هو الشيخ والعالم الجليل مؤسس الطريقة القادرية الصوفية والمدفون في بغداد؟", opts: ["الشيخ عبد القادر الكيلاني", "الشيخ أحمد البدوي", "الشيخ أبو حنيفة النعمان", "الشيخ جنيد البغدادي"], corr: 0 },
+    { q: "من هو الإمام الجليل مؤسس المذهب الحنفي الفقهي الإسلامي ومدفون في بغداد بمرقده الشهير؟", opts: ["الإمام أبو حنيفة النعمان", "الإمام الشافعي", "الإمام مالك", "الإمام أحمد بن حنبل"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي تشتهر بأهوارها الخلابة ومدرجة ضمن التراث العالمي لليونسكو؟", opts: ["أهوار العراق (ميسان، ذي قار، البصرة)", "بابل", "الأنبار", "نينوى"], corr: 0 },
+    { q: "ما هو اسم الحضارة العراقية القديمة التي قامت في الجنوب واشتهرت باختراع العجلة والكتابة المسمارية؟", opts: ["الحضارة السومرية", "الحضارة البابلية", "الحضارة الآشورية", "الحضارة الحيثية"], corr: 0 },
+    { q: "ما هو اسم أول ملك سومرية موحد لبلاد سومر وأسس سلالة أوروك الأولى؟", opts: ["جلجامش", "إئيتانا", "لوغال زاگيسي", "سرجون"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي تعتبر عاصمة محافظة نينوى وتاريخياً تقوم على أنقاض مدينة نينوى الآشورية العظيمة؟", opts: ["الموصل", "تكريت", "كركوك", "أربيل"], corr: 0 },
+    { q: "من هو القائد العباسي الذي أعاد عاصمة الخلافة من سامراء إلى بغداد نهائياً؟", opts: ["المعتضد بالله", "المتوكل", "المستعصم", "المهتدي"], corr: 0 },
+    { q: "ما هي المعركة التاريخية الإسلامية الكبرى التي قضي فيها نهائياً على دولة الفرس الساسانية في نهاوند والعراق؟", opts: ["معركة نهاوند (وتسمى فتح الفتوح)", "معركة القادسية", "معركة الجمل", "معركة صفين"], corr: 0 },
+    { q: "ما هو اسم الصحابي البطل قائد معركة ذي قار التي انتصر فيها العرب على الفرس قبل الإسلام؟", opts: ["المثنى بن حارثة والشيبانيون", "سعد بن أبي وقاص", "خالد بن الوليد", "النعمان بن المنذر"], corr: 0 },
+    { q: "ما هو اسم أول صحيفة رسمية صدرت في العراق والوطن العربي عام 1869 م في بغداد؟", opts: ["جريدة الزوراء", "جريدة العراق", "جريدة بغداد", "جريدة الاستقلال"], corr: 0 },
+    { q: "من هو الوالي العثماني الإصلاحي الشهير الذي أدرك العراق وأنشأ جريدة الزوراء والمطبعة العثمانية؟", opts: ["مدحت باشا", "داود باشا", "سليمان باشا", "حسن باشا"], corr: 0 },
+    { q: "ما هو اسم المقبرة الملكية التاريخية في أور التي عُثر فيها على كنوز الذهب السومري المذهلة؟", opts: ["المقبرة الملكية في أور", "مقبرة بابل الأثرية", "مقبرة نينوى", "مقبرة الحضر"], corr: 0 },
+    { q: "من هو الملك الآشوري الذي أنشأ نينوى واتخذها عاصمة لإمبراطوريتها الواسعة؟", opts: ["سنحاريب", "آشور بانيبال", "تجلات بلاصر", "سرجون الثاني"], corr: 0 },
+    { q: "ما هي المدينة العراقية التاريخية التي تقع على نهر دجلة واشتهرت بمدارسها الفقهية والصوفية وتضم مرقد الإمام الحسن العسكري؟", opts: ["سامراء", "بغداد", "الموصل", "كركوك"], corr: 0 },
+    { q: "من هو الملك البابلي القديم الذي خلف والده وأعاد بناء بابل ومجدها بعد الدمار الآشوري؟", opts: ["نبوبولاسر ونبوخذ نصر", "حمورابي", "سرجون", "ريم سين"], corr: 0 },
+    { q: "ما هو اسم المسرح العراقي العريق الذي تأسس في بغداد واحتضن رواد الفن المسرحي العراقي؟", opts: ["مسرح الرشيد ومسرح الوطني", "مسرح بغداد الكبير", "مسرح البصرة", "مسرح الموصل"], corr: 0 },
+    { q: "من هو رائد الفن التشكيلي العراقي الحديث ومؤسس گروه بغداد للفن الحديث؟", opts: ["جواد سليم", "فائق حسن", "شاكر حسن آل سعيد", "إسماعيل الشيخلي"], corr: 0 },
+    { q: "ما هو اسم النصب التذكاري الشهير في بغداد من تصميم الفنان جواد سليم والذي يخلد ثورة 14 تموز؟", opts: ["نصب الحرية (في ساحة التحرير)", "نصب الشهيد", "نصب الجندي المجهول", "نصب بغداد"], corr: 0 },
+    { q: "ما هو اسم النصب المعماري والفني الشامخ في بغداد الذي يخلد شهداء العراق من تصميم المعماري سامي كمال؟", opts: ["نصب الشهيد", "نصب الحرية", "قوس النصر", "نصب بغداد"], corr: 0 },
+    { q: "في أي عام تم اكتشاف أثرية مدينة بابل وإجراء التنقيبات الألمانية الكبرى بقيادة روبرت كولديواي؟", opts: ["1899 م - 1917 م", "1950 م", "1920 م", "1850 م"], corr: 0 },
+    { q: "ما هو اسم أول وزير مفوض أو رئيس وزراء عراقي في حكومة برهان الدين باشا أو الحكم الوطني الأول؟", opts: ["عبد الرحمن النقيب", "نوري السعيد", "جعفر العسكري", "ياسين الهاشمي"], corr: 0 },
+    { q: "في أي سنة تم إعلان الجمهورية العراقية الثانية (أو ثورة 17 تموز)؟", opts: ["1968 م", "1958 م", "1970 م", "1979 م"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي تقع في أقصى الجنوب وتُعتبر الميناء البحري الرئيسي الوحيد للعراق على الخليج العربي؟", opts: ["البصرة (أم القصر)", "الفاو", "السليمانية", "العمارة"], corr: 0 },
+    { q: "ما هو اسم الحصن أو القلعة التاريخية في البصرة التي شهدت أحداثاً تاريخية كبرى؟", opts: ["قلعة البصرة (أو القشلة)", "قلعة كركوك", "قلعة أربيل", "قلعة الرمادي"], corr: 0 },
+    { q: "من هو الإمام الجليل مؤسس المذهب الجعفري الفقهي الإسلامي ومدفون في البقيع لكنه ترك مدرسة كبرى في العراق؟", opts: ["الإمام جعفر الصادق عليه السلام", "الإمام الباقر", "الإمام الكاظم", "الإمام الرضا"], corr: 0 },
+    { q: "ما هي المدينة العراقية التي تضم مرقد الإمام موسى الكظم والإمام محمد الجواد عليهم السلام؟", opts: ["الكاظمية (بغداد)", "سامراء", "كربلاء", "النجف"], corr: 0 },
+    { q: "ما هو اسم القائد العباسي الشهير الذي عينه هارون الرشيد والياً على إفريقية وهو من أبرز رجالات الدولة بالعراق؟", opts: ["إبراهيم بن الأغلب", "أبو مسلم الخراساني", "جعفر البرمكي", "الفضل بن سهل"], corr: 0 },
+    { q: "ما هو اسم الوزير الفارسي النافذ في عهد هارون الرشيد والذي نكب البرامكة بسببه؟", opts: ["يحيى بن خالد البرمكي وجعفر البرمكي", "الحجاج بن يوسف", "المهدي", "ابن المقفع"], corr: 0 },
+    { q: "من هو الكاتب والأدباء العراقي البارز صاحب كتاب 'البخلاء' و'البيان والتبيين' والذي عاش في البصرة وبغداد؟", opts: ["الجاحظ (أبو عثمان عمرو بن بحر)", "ابن المقفع", "ابن قتيبة", "أبو الفرج الأصفهاني"], corr: 0 },
+    { q: "من هو مؤلف كتاب 'الأغاني' الموسوعي الضخم الذي عاش في بغداد والعصر العباسي؟", opts: ["أبو الفرج الأصفهاني", "الجاحظ", "المسعودي", "الطبري"], corr: 0 },
+    { q: "ما هو اسم المؤرخ الإسلامي الكبير صاحب تاريخ الأمم والملوك (تاريخ الطبري) والذي عاش ودرس في العراق؟", opts: ["محمد بن جرير الطبري", "البلاذري", "ابن الأثير", "المسعودي"], corr: 0 },
+    { q: "ما هو اسم الإمبراطورية القديمة التي نافست الرومان واتخذت من المدائن (طيسطون) في العراق عاصمة لها لقرون طويلة؟", opts: ["الإمبراطورية الساسانية (الفارسية)", "الإمبراطورية البيزنطية", "الإمبراطورية العثمانية", "الإمبراطورية المغولية"], corr: 0 },
+    { q: "في أي عام تم توقيع اتفاقية سايكس بيكو التي قسمت المنطقة ورسمت حدود العراق الحديث؟", opts: ["1916 م", "1920 م", "1914 م", "1922 م"], corr: 0 },
+    { q: "ما هو اسم المؤتمر الدولي الذي عقد في عام 1921 لتحديد مصير العراق وتأسيس الحكومة العراقية المؤقتة برئاسة البريطانيين؟", opts: ["مؤتمر القاهرة (1921)", "مؤتمر سان ريمو", "مؤتمر باريس للسلام", "مؤتمر لوزان"], corr: 0 },
+    { q: "ما هي المدينة العراقية الجبلية الجميلة التي تُعتبر عاصمة إقليم كوردستان العراق وتتميز بطبيعتها الخلابة؟", opts: ["أربيل (هولير)", "السليمانية", "دهوك", "حلبجة"], corr: 0 },
+    { q: "ما هي المدينة العراقية الحدودية المشهورة بآثارها التاريخية وطبيعتها وجبالها في إقليم كوردستان (السليمانية)؟", opts: ["السليمانية", "حلبجة", "رانيا", "قلاچوالان"], corr: 0 },
+    { q: "ما هو اسم النهر الثالث التاريخي في العراق الذي يجري في شمال ووسط البلاد ويغذي دجلة؟", opts: ["نهر العظيم (أو ديالى أو الزاب)", "نهر كارون", "نهر بردى", "نهر الأردن"], corr: 0 },
+    { q: "من هو المعتمد السياسي البريطاني الأول في العراق إبان الانتداب البريطاني؟", opts: ["برسي كوكس", "لورنس العرب", "جرترود بيل", "أرنولد ويلسون"], corr: 0 },
+    { q: "ما هي المستشرقة والرحالة البريطانية الشهيرة التي ساهمت في رسم حدود العراق وتأسيس المتحف العراقي وتوفيت في بغداد؟", opts: ["جرترود بيل (خاتون)", "أجاثا كريستي", "فرييا ستارك", "ليدي بلنت"], corr: 0 },
+    { q: "من هو عالم الآثار والكاتب الإنجليزي الشهير الذي تزوج عالم الآثار ماكس مالوان وعاش وعمل في التنقيب بمواقع العراق الأثرية؟", opts: ["أجاثا كريستي (التي ألفت روايات في العراق مثل جريمة في قطار الشرق السريع وكاتبة شهيرة عاشت في نمرود)", "تشارلز ديكنز", "آرثر كونان دويل", "مارك توين"], corr: 0 },
+    { q: "ما هي المدينة العراقية التاريخية التي تضم أكبر مقبرة إسلامية في العالم (وادي السلام)؟", opts: ["النجف الأشرف", "كربلاء", "بغداد", "الكوفة"], corr: 0 },
+    { q: "ما هو اسم القصر العباسي الأثري الباقي في بغداد والذي يُعد تحفة معمارية نادرة من العصر العباسي المتأخر؟", opts: ["القصر العباسي (قصر الخليفة في بغداد)", "قصر الأخيضر", "قصر البصرة", "قصر الفاو"], corr: 0 },
+    { q: "ما هو اسم الحصن الصحراوي العباسي العظيم الشامخ في محافظة كربلاء بوسط العراق؟", opts: ["حصن قصر الأخيضر", "قصر الحضر", "قصر سنحاريب", "قصر نمرود"], corr: 0 }
+];
+const animalsQuestions100 = [
+    { q: "ما هو الحيوان الذي يُطلق عليه لقب 'سفينة الصحراء'؟", opts: ["الحصان", "الجمل", "الفيل", "الخروف"], corr: 1 },
+    { q: "ما هو الحيوان الذي يمتلك أطول رقبة في العالم؟", opts: ["الفيل", "الزرافة", "الحصان", "الكنغر"], corr: 1 },
+    { q: "ما هو أكبر حيوان ثديي بحري في العالم؟", opts: ["القرش الأبيض", "الحوت الأزرق", "الدلفين", "فيل البحر"], corr: 1 },
+    { q: "ما هو أصغر طائر في العالم؟", opts: ["العصفور", "طائر الطنان", "اليمام", "البلبل"], corr: 1 },
+    { q: "ما هو أسرع حيوان بري على سطح الأرض؟", opts: ["الأسد", "الفهد (الشيتا)", "الغزال", "الحصان"], corr: 1 },
+    { q: "ما هو الحيوان الذي يُعرف بملك الغابة؟", opts: ["النمر", "الأسد", "الفيل", "الدب"], corr: 1 },
+    { q: "ما هو الطائر الوحيد الذي يمكنه الطيران إلى الوراء؟", opts: ["النسر", "طائر الطنان", "العصفور", "البطريق"], corr: 1 },
+    { q: "ما هو الحيوان الذي ينام واقفاً؟", opts: ["البقر", "الحصان", "الكلب", "القط"], corr: 1 },
+    { q: "كم عدد قلوب الأخطبوط؟", opts: ["قلب واحد", "قلبان", "ثلاثة قلوب", "أربعة قلوب"], corr: 2 },
+    { q: "ما هو الحيوان الذي يمتلك أقوى قوة عضّ بين الحيوانات البرية؟", opts: ["الأسد", "فرس النهر (أو التمساح)", "الذئب", "الدب"], corr: 1 },
+    { q: "ما هو الحيوان الذي يحمل صغاره في جيب بطنه؟", opts: ["القنفذ", "الكنغر", "الفهد", "السنجاب"], corr: 1 },
+    { q: "ما هو الحشرة التي تنتج العسل؟", opts: ["الذباب", "النحل", "البعوض", "النمل"], corr: 1 },
+    { q: "ما هو الطائر الذي لا يمكنه الطيران ولكنه يعدو بسرعة كبيرة؟", opts: ["النعامة", "البطريق", "الدجاجة", "الحجل"], corr: 0 },
+    { q: "ما هو الحيوان الذي يتغير لونه ليناسب البيئة المحيطة به؟", opts: ["الحرباء", "السلحفاة", "الضفدع", "الأفعى"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُعرف ببطء شديد في حركته؟", opts: ["القنفذ", "الكسلان", "القندس", "القواب"], corr: 1 },
+    { q: "ما هو الحيوان الذي يُعتبر أذكى الحيوانات البحرية بعد الإنسان؟", opts: ["القرش", "الدلفين", "الحوت", "الفقمة"], corr: 1 },
+    { q: "ما هو الحيوان الذي يمتلك جلداً سميكاً للغاية ويُسمى بالحيوان ذو القرون الأنفية؟", opts: ["وحيد القرن (الكركدن)", "الفيل", "فرس النهر", "الثور"], corr: 0 },
+    { q: "ما هي صغار الضفادع في مراحل نموها الأولى؟", opts: ["الشرغوف", "اليرقة", "الشرندل", "الجرادة"], corr: 0 },
+    { q: "ما هو الحيوان الذي يبني سدوداً هندسية مذهلة في الأنهار؟", opts: ["القندس", "السنجاب", "الثعلب", "الخنزير البري"], corr: 0 },
+    { q: "ما هو الطائر الذي يُعتبر رمزاً للحكمة في الثقافات المختلفة؟", opts: ["الغراب", "البومة", "النسر", "الحمام"], corr: 1 },
+    { q: "ما هو الحيوان الذي يمتلك أضخم دماغ بين الحيوانات على الأرض؟", opts: ["الفيل", "حوت العنبر", "الدلفين", "الشمبانزي"], corr: 1 },
+    { q: "ما هو الحيوان الذي يتغذى بشكل رئيسي على أوراق أوكالبتوس (أشجار الكافور)؟", opts: ["الباندا", "الكوالا", "الكسلان", "الكنغر"], corr: 1 },
+    { q: "ما هو الدب الذي يتميز بلونه الأبيض وييشد في القطب الشمالي؟", opts: ["الدب الأسود", "الدب البني", "الدب القطبي", "دب الباندا"], corr: 2 },
+    { q: "ما هو الحيوان الذي يُسمى صغيره بـ 'الخرنق'؟", opts: ["الأرنب", "الثعلب", "الكلب", "القط"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُسمى صوته بـ 'النُهام' أو 'الصهيل'؟", opts: ["الحصان", "الحمار", "الأسد", "الذئب"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك خطوطاً سوداء وبيضاء مميزة على جسمه؟", opts: ["النمر", "الحمار الوحيدي (الزيبرا)", "الفهد", "الغزال"], corr: 1 },
+    { q: "ما هو الحيوان البحري الذي يمتلك ذراعين أو لوامس مغطاة بالمصاصات ويسكن قاع البحر؟", opts: ["الأخطبوط", "قنديل البحر", "نجم البحر", "سرطان البحر"], corr: 0 },
+    { q: "ما هو الحيوان الذي يطلق رائحة كريهة جداً للدفاع عن نفسه عند الخطر؟", opts: ["الظربان (السكังก์)", "القنفذ", "الابراص", "الراكون"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك صدفة صلبة يحتمي داخلها ويمكنه العيش لعشرات السنين؟", opts: ["السلحفاة", "القنب", "السلطعون", "القوقعة"], corr: 0 },
+    { q: "ما هو الطائر الذي وُصف بـ 'ملك الطيور' ويطير بسرعة وارتفاع كبيرين؟", opts: ["النسر (أو الصقر)", "العصفور", "الغراب", "الحمام"], corr: 0 },
+    { q: "ما هو الحيوان الذي يستطيع العيش لفترات طويلة جداً بدون قطرة ماء واحدة في الصحراء؟", opts: ["الجرذ الصحراوي (أو الجمل)", "الثعلب", "الضَب", "الأرنب البري"], corr: 0 },
+    { q: "ما هو الحيوان المنقرض الشهير الذي كان ضخماً وعاش في العصور القديمة ودمرته التغيرات المناخية أو النيزك؟", opts: ["الديناصور", "الماموث", "النمر السابري", "الأسد الكهفي"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك خراطيم طويلة وقوية يستخدمها في الشرب والأكل؟", opts: ["الفيل", "فرس النهر", "آكل النمل", "الخنزير البري"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُعرف بكونه 'صديق الإنسان' الوفي؟", opts: ["القط", "الكلب", "الحصان", "العصفور"], corr: 1 },
+    { q: "ما هو الطائر الذي يضع بيضه في أعشاش طيور أخرى لتتولى تربيته بدلاً منه؟", opts: ["الوقواق", "اليمام", "الحجل", "الصقور"], corr: 0 },
+    { q: "ما هو الحيوان الذي يعيش في مجموعات تُسمى 'قطيع' أو 'فخر' بالنسبة للأسود؟", opts: ["الأسود", "الذئاب", "القرود", "الكلاب"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أجنحة لكنه ينتمي للثدييات ويطير ليلاً؟", opts: ["الوطواط (خفاش)", "السنجاب الطائر", "البومة", "الغراب"], corr: 0 },
+    { q: "ما هو الحيوان الذي يفرز حبراً أسود في الماء ليهرب من أعدائه؟", opts: ["الحبار (السبيط)", "الأخطبوط", "قنديل البحر", "السرطان"], corr: 0 },
+    { q: "ما هو الحيوان الذي يتغذى حصرياً على النمل والنمل الأبيض بلسانه الطويل اللزج؟", opts: ["آكل النمل الحشري", "القنفذ", "القرد", "الخنزير"], corr: 0 },
+    { q: "ما هو الطائر البحري الذي يعيش في القطب الجنوبي البارد ولا يطير بل يسبح بمهارة؟", opts: ["النورس", "البطريق", "القطرس", "البجع"], corr: 1 },
+    { q: "ما هو الحيوان الذي يمتلك قدرة على تجديد أطرافه أو ذيله إذا قطعت؟", opts: ["السحلية (أو الوزغ / الأبرص)", "القط", "الكلب", "الثعبان"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك سنامين على ظهره؟", opts: ["الجمل ذو السنامين (البختري)", "الجمل العربي ذو السنام الواحد", "اللاما", "الأبقار"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُعتبر أكبر القوارض الحية في العالم؟", opts: ["الخنزير الغيني", "الكابيبارا (خنزير الماء)", "القندس", "السنجاب"], corr: 1 },
+    { q: "ما هو الحيوان الذي يُسمى صغيره بـ 'الشرود' أو 'الجرو'؟", opts: ["الكلب أو الثعلب", "القط", "الحصان", "الأسد"], corr: 0 },
+    { q: "ما هو الحشرة التي تقفز لمسافات تفوق طول جسمها بأضعاف وتصدر صوتاً بالحت؟", opts: ["الجراد (أو الصرصور)", "النحلة", "الذباب", "النمل"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك رقبة قصيرة جداً وجسم ضخم وعاشق للمياه الطينية؟", opts: ["فرس النهر", "الفيل", "وحيد القرن", "الجاموس"], corr: 0 },
+    { q: "ما هو الطائر الذي يمتلك ذيلاً طويلاً وملوناً وجميلاً يفتحه كالمروحة؟", opts: ["الطاووس", "الديك الرومي", "البط", "البطريق"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُعتبر أبطأ الثدييات البحرية؟", opts: ["خرفان البحر (المناتي)", "الدلفين", "الفقمة", "الحوت"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أنياباً طويلة وبارزة تُسمى 'العاج'؟", opts: ["الفيل", "الخنزير البري", "الفرس", "الجاموس"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك فروة سميكة للغاية وثمينة وتعيش في المياه الباردة؟", opts: ["ثعلب الماء (القندس)", "الدب", "الذئب", "الأرنب"], corr: 0 },
+    { q: "ما هو الطائر الذي يمتلك جراباً أسفل منقاره يجمع فيه الأسماك؟", opts: ["البليكان (البجع)", "النسر", "النورس", "اليمام"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جلداً أقطش وأرجل قصيرة ويُعرف بلدغته السامة أحياناً في البراري؟", opts: ["العقرب (من العناكب)", "الأفعى", "العنكبوت", "النحلة"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك خياشيم للتنفس في الماء بينما يمتلك صغاره شكلاً مختلفاً تماماً؟", opts: ["السمكة", "الضفدع", "التمساح", "الحوت"], corr: 0 },
+    { q: "ما هو الطائر الذي يُعتبر أسرع الحيوانات في الغوص والانقضاض من السماء؟", opts: ["الصقر الجارح (الشاهين)", "النسر", "العقاب", "البومة"], corr: 0 },
+    { q: "ما هو الحيوان الذي يعيش في مستعمرات تحت الأرض ويسمى حيوان الخلد؟", opts: ["الخلد الأعمى", "الفأر", "الأرنب", "القنفذ"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك شعيرات مدببة صلبة جداً على ظهره تحميه من الأعداء؟", opts: ["القنفذ", "النيص", "الظربان", "السنجاب"], corr: 1 },
+    { q: "ما هو الحيوان الذي يمتلك أكبر العينين بين جميع الحيوانات البرية؟", opts: ["النعامة", "البومة", "الحصان", "الفيل"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك القدرة على تغيير جنسه في بعض الظروف البيئية؟", opts: ["بعض أنواع الأسماك (مثل سمك المهرج)", "القطط", "الكلاب", "الخيولقة"], corr: 0 },
+    { q: "ما هو الحيوان الذي يعتمد على الصدى (تحديد الموقع صدى الصوت) في طيرانه ليلاً؟", opts: ["الخفاش", "البومة", "الغراب", "العصفور"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُسمى صغيره بـ 'الحتة' أو 'المهر'؟", opts: ["المهر (صغير الحصان)", "البتلو (صغير البقر)", "الحمل (صغير الغنم)", "الشرغوف"], corr: 0 },
+    { q: "ما هو الطائر الذي اشتهر بقدرته على تقليد أصوات البشر والكلام؟", opts: ["الببغاء", "البلبل", "العصفور", "الحمام"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أربع أرجل وذيل قصير ويعيش في الغابات ويحب العسل كثيراً؟", opts: ["الدب", "الثعلب", "الذئب", "القط البري"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جلداً مرقطاً بالأسود والاصفر ويُعد من أسرع السنوريات؟", opts: ["الفهد المرقط (الليوبارد)", "النمر", "الأسد", "القط"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أذنين كبيرتين جداً تساعده على تنظيم حرارة جسمه في الصحراء؟", opts: ["فيل الصحراء أو الثعلب الفنك", "الأرنب البري", "الجمل", "الذئب"], corr: 1 },
+    { q: "ما هو الطائر الذي يُعد رمزاً للسلام العالمي؟", opts: ["الحمامة البيضاء", "اليمامة", "العصفور", "البجعة"], corr: 0 },
+    { q: "ما هو الحيوان البحري الذي يمتلك أسناناً حادة جداً ويُلقب بمرعب المحيطات؟", opts: ["سمك القرش الأبيض الكبير", "الحوت القاتل", "قنديل البحر", "الأخطبوط"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك القدرة على المشي على قاع البحيرات والأنهار ببطء شديد؟", opts: ["فرس النهر", "التمساح", "السلحفاة المائية", "البط"], corr: 0 },
+    { q: "ما هو الحيوان الذي يعيش في مناطق الجليد والقطبين ويملك أنابيب ومخالب قوية جداً وفراء أبيض سميك؟", opts: ["الدب القطبي", "الثعلب القطبي", "البطريق", "الفقمة"], corr: 0 },
+    { q: "ما هو الطائر الذي يمتلك منقاراً طويلاً رفيعاً يمتص به رحيق الأزهار تماماً كالطنان؟", opts: ["طائر الطنان", "البلبل", "الهدهد", "الغراب"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُسمى بـ 'سيد المخلب' ويحفر جحوراً عميقة تحت الأرض؟", opts: ["الغرير", "القنفذ", "السنجاب", "الخلد"], corr: 0 },
+    { q: "ما هو الحشرة التي تسبب مرض الملاريا بنقل الطفيليات للإنسان؟", opts: ["الأنوفيليس (أنثى بعوض الملاريا)", "الذباب", "البراغيث", "القراد"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جسمًا طويلًا ورفيعًا بلا أرجل ويتسلق الأشجار أحيانًا أو يزحف؟", opts: ["الثعبان (الأفعى)", "الديدان", "السحلية", "التمساح"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أسناناً تنمو طوال حياته ويجب عليه قرض الأخشاب دائماً؟", opts: ["القوارض (مثل القندس والفأر والأرنب)", "القطط", "الكلاب", "الخيول"], corr: 0 },
+    { q: "ما هو الحيوان الذي يعيش في أعماق البحار السحيقة وله القدرة على إضاءة جسمه بيولوجياً؟", opts: ["سمكة الصياد (أو قنديل البحر المضيء)", "الحوت الأزرق", "الدلفين", "القرش"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك قروناً متفرعة وجميلة يتفاخر بها الذكور في موسم التزاوج؟", opts: ["الإيل (الغزال ذو القرون المتفرعة)", "الثور", "الكبش", "الوعل"], corr: 0 },
+    { q: "ما هو الطائر الذي يعيش في الصحراء ويمتلك قدرة على الركض السريع ولا يطير؟", opts: ["النعامة", "الحجل", "القطا", "الحمام البري"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك لساناً يبلغ طوله نصف طول جسمه تقريباً؟", opts: ["الحرباء", "آكل النمل", "الضفدع", "الزرافة"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جسماً مغطى بالحراشف الصلبة ويتكور على شكل كرة عند الخطر؟", opts: ["آكل النمل الحشفي (البانغولين)", "القنفذ", "السلحفاة", "التمساح"], corr: 0 },
+    { q: "ما هو الحيوان الذي يُعرف بأنه أكثر الحيوانات نومًا في اليوم (حوالي 20 ساعة)؟", opts: ["الكسلان (أو الكوالا)", "القط", "الأسد", "الباندا"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جلداً زلقاً وسميكاً ويعيش نصف حياته في الماء ونصفها على اليابسة؟", opts: ["التمساح (أو فرس النهر)", "الضفدع", "السلحفاة", "الأفعى"], corr: 0 },
+    { q: "ما هو الطائر المائي الذي يمتلك قدمين مكففتين للسباحة ويصدر صوت 'قواقاة'؟", opts: ["البط (أو الإوز)", "البجع", "النورس", "البطريق"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك ذيلاً طويلاً يستخدمه كيد ثالثة للتسلق والتعلق بالأشجار؟", opts: ["القرد (أو السلواكي)", "القط", "السنجاب", "الكنغر"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جسماً يشبه الحصان لكنه مخطط بالكامل بالأبيض والأسود؟", opts: ["الحمار الوحشي (الزيبرا)", "المهر", "الفهد", "الغزال"], corr: 0 },
+    { q: "ما هو الطائر الجارح ليلي النشاط ويمتلك عيوناً ثابتة لا تتحرك بل يدير رأسه بزاوية واسعة؟", opts: ["البومة", "الصقر", "النسر", "الغراب"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك خياشيم للسباحة والتنفس تحت الماء من الأسماك؟", opts: ["الأسماك العظمية والغضروفية", "الحيتان", "الدلافين", "الفقمات"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جسماً ضخماً وأنياباً قصيرة ويعيش في الغابات الاستوائية والسهول؟", opts: ["الجاموس البري (أو الخنزير البري)", "الفيل", "الفرس", "الأسد"], corr: 0 },
+    { q: "ما هو الطائر الذي يُعد أكبر الطيور الحية حجماً على وجه الأرض؟", opts: ["النعامة", "البطريق الإمبراطور", "النسر", "البجع"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك قدرة فائقة على الشم ويستخدم في تتبع الأثر والبحث؟", opts: ["الكلب", "القط", "الثعلب", "الذئب"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أذنين طويلتين جداً ويعدو بسرعة وقفزات واسعة؟", opts: ["الأرنب", "الغزال", "الكنغر", "الكلب"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جلداً أملس وذيلًا قصيرًا ويصدر نقيقاً في ليالي الصيف؟", opts: ["الضفدع", "السلحفاة", "الحرباء", "التمساح"], corr: 0 },
+    { q: "ما هو الحيوان الذي يعيش في خلايا منظمة ويقسم إلى شغالات وملكة وذكور؟", opts: ["النحل (أو النمل)", "الذباب", "البعوض", "الفراش"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك أربعة أرجل وذيل طويل ويُعتبر من أقدم الحيوانات المستأنسة لحراسة المنازل؟", opts: ["الكلب", "القط", "الخروف", "الجمل"], corr: 0 },
+    { q: "ما هو الطائر الذي يمتلك عرفاً أحمر مميزاً ويصيح بصوت عالٍ مع شروق الشمس؟", opts: ["الديك", "الدجاجة", "الحجل", "الطاووس"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك فروة سميكة بنية اللون ويصطاد الأسماك في الأنهار والشلالات؟", opts: ["الدب البني", "الثعلب", "الذئب", "الكلب البري"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جسماً رفيعاً ومرناً جداً ويمكنه المرور عبر أصغر الفتحات بسهولة؟", opts: ["القط", "الكلب", "الأرنب", "القنفذ"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك خطماً طويلاً وحوافر مشقوقة ويعيش في الغابات والمزارع ويحب الوحل؟", opts: ["الخنزير البري", "الفرس", "البقر", "الغزال"], corr: 0 },
+    { q: "ما هو الطائر البحري الذي يطير لمسافات شاسعة فوق المحيطات ونادراً ما يقترب من اليابسة إلا للتكاثر؟", opts: ["طائر القطرس", "النورس", "البطريق", "البجع"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك حوافر صلبة ويستخدم للركوب والجر وحمل الأثقال منذ آلاف السنين؟", opts: ["الحصان (أو الحمار)", "الكلب", "القط", "الأسد"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك جسماً طويلاً مرقطاً بالأسود والبرتقالي ويُعد من أخطر السنوريات المفترسة؟", opts: ["النمر (Tiger)", "الفهد", "الأسد", "الفهد الأقطش"], corr: 0 },
+    { q: "ما هو الحيوان الذي يمتلك قدرة فريدة على المشي المقلوب على الأسقف بفضل وسائد قدميه اللاصقة؟", opts: ["الوزغ (البرص)", "السلحفاة", "الضفدع", "العنكبوت"], corr: 0 }
+];
+const mathQuestions100 = [
+    // قسم الجمع
+    { q: "ما ناتج جمع: 15 + 25؟", opts: ["35", "40", "45", "50"], corr: 1 },
+    { q: "ما ناتج جمع: 124 + 136؟", opts: ["250", "260", "270", "280"], corr: 1 },
+    { q: "ما ناتج جمع: 7 + 8؟", opts: ["14", "15", "16", "17"], corr: 1 },
+    { q: "ما ناتج جمع: 45 + 55؟", opts: ["90", "100", "110", "120"], corr: 1 },
+    { q: "ما ناتج جمع: 33 + 67؟", opts: ["90", "95", "100", "105"], corr: 2 },
+    { q: "ما ناتج جمع: 215 + 185؟", opts: ["390", "400", "410", "420"], corr: 1 },
+    { q: "ما ناتج جمع: 9 + 9 + 9؟", opts: ["24", "27", "30", "33"], corr: 1 },
+    { q: "ما ناتج جمع: 50 + 150؟", opts: ["150", "200", "250", "300"], corr: 1 },
+    { q: "ما ناتج جمع: 88 + 12؟", opts: ["90", "95", "100", "110"], corr: 2 },
+    { q: "ما ناتج جمع: 430 + 570؟", opts: ["900", "1000", "1100", "1200"], corr: 1 },
+    { q: "ما ناتج جمع: 19 + 21؟", opts: ["38", "39", "40", "41"], corr: 2 },
+    { q: "ما ناتج جمع: 64 + 36؟", opts: ["90", "95", "100", "105"], corr: 2 },
+    { q: "ما ناتج جمع: 111 + 222؟", opts: ["323", "333", "343", "353"], corr: 1 },
+    { q: "ما ناتج جمع: 500 + 750؟", opts: ["1150", "1200", "1250", "1300"], corr: 2 },
+    { q: "ما ناتج جمع: 4 + 8 + 12؟", opts: ["22", "24", "26", "28"], corr: 1 },
+    { q: "ما ناتج جمع: 75 + 25؟", opts: ["90", "100", "110", "120"], corr: 1 },
+    { q: "ما ناتج جمع: 620 + 380؟", opts: ["900", "950", "1000", "1050"], corr: 2 },
+    { q: "ما ناتج جمع: 14 + 16 + 20؟", opts: ["48", "50", "52", "54"], corr: 1 },
+    { q: "ما ناتج جمع: 99 + 1؟", opts: ["99", "100", "101", "110"], corr: 1 },
+    { q: "ما ناتج جمع: 350 أضاف إليها 650؟", opts: ["900", "1000", "1100", "1200"], corr: 1 },
 
-/* ==================================================
-   المتغيرات
-================================================== */
+    // قسم الطرح
+    { q: "ما ناتج طرح: 50 - 18؟", opts: ["30", "32", "34", "36"], corr: 1 },
+    { q: "ما ناتج طرح: 100 - 45؟", opts: ["45", "50", "55", "60"], corr: 2 },
+    { q: "ما ناتج طرح: 250 - 125؟", opts: ["115", "120", "125", "130"], corr: 2 },
+    { q: "ما ناتج طرح: 12 - 7؟", opts: ["3", "4", "5", "6"], corr: 2 },
+    { q: "ما ناتج طرح: 500 - 230؟", opts: ["260", "270", "280", "290"], corr: 1 },
+    { q: "ما ناتج طرح: 81 - 9؟", opts: ["62", "70", "72", "74"], corr: 2 },
+    { q: "ما ناتج طرح: 1000 - 350؟", opts: ["600", "650", "700", "750"], corr: 1 },
+    { q: "ما ناتج طرح: 64 - 28؟", opts: ["34", "36", "38", "40"], corr: 1 },
+    { q: "ما ناتج طرح: 45 - 19؟", opts: ["24", "26", "28", "30"], corr: 1 },
+    { q: "ما ناتج طرح: 90 - 45؟", opts: ["35", "40", "45", "50"], corr: 2 },
+    { q: "ما ناتج طرح: 333 - 111؟", opts: ["212", "221", "222", "232"], corr: 2 },
+    { q: "ما ناتج طرح: 72 - 35؟", opts: ["35", "37", "39", "41"], corr: 1 },
+    { q: "ما ناتج طرح: 150 - 75؟", opts: ["65", "70", "75", "80"], corr: 2 },
+    { q: "ما ناتج طرح: 88 - 44؟", opts: ["40", "42", "44", "46"], corr: 2 },
+    { q: "ما ناتج طرح: 200 - 137؟", opts: ["53", "63", "73", "83"], corr: 1 },
+    { q: "ما ناتج طرح: 40 - 15؟", opts: ["20", "25", "30", "35"], corr: 1 },
+    { q: "ما ناتج طرح: 550 - 225؟", opts: ["315", "325", "335", "345"], corr: 1 },
+    { q: "ما ناتج طرح: 19 - 8؟", opts: ["9", "10", "11", "12"], corr: 2 },
+    { q: "ما ناتج طرح: 60 - 24؟", opts: ["34", "36", "38", "40"], corr: 1 },
+    { q: "ما ناتج طرح: 900 - 450؟", opts: ["400", "450", "500", "550"], corr: 1 },
 
-const board =
-    document.getElementById("puzzle-board");
+    // قسم الضرب
+    { q: "ما ناتج ضرب: 7 × 8؟", opts: ["54", "56", "58", "64"], corr: 1 },
+    { q: "ما ناتج ضرب: 9 × 9؟", opts: ["72", "81", "90", "99"], corr: 1 },
+    { q: "ما ناتج ضرب: 12 × 12؟", opts: ["124", "132", "144", "154"], corr: 2 },
+    { q: "ما ناتج ضرب: 6 × 7؟", opts: ["36", "40", "42", "48"], corr: 2 },
+    { q: "ما ناتج ضرب: 5 × 15؟", opts: ["65", "70", "75", "80"], corr: 2 },
+    { q: "ما ناتج ضرب: 11 × 11؟", opts: ["111", "121", "131", "141"], corr: 1 },
+    { q: "ما ناتج ضرب: 4 × 25؟", opts: ["75", "90", "100", "125"], corr: 2 },
+    { q: "ما ناتج ضرب: 8 × 6؟", opts: ["42", "48", "54", "56"], corr: 1 },
+    { q: "ما ناتج ضرب: 10 × 45؟", opts: ["400", "450", "500", "455"], corr: 1 },
+    { q: "ما ناتج ضرب: 3 × 17؟", opts: ["41", "45", "51", "54"], corr: 2 },
+    { q: "ما ناتج ضرب: 13 × 5؟", opts: ["55", "60", "65", "70"], corr: 2 },
+    { q: "ما ناتج ضرب: 9 × 6؟", opts: ["45", "54", "63", "72"], corr: 1 },
+    { q: "ما ناتج ضرب: 20 × 30؟", opts: ["500", "600", "700", "800"], corr: 1 },
+    { q: "ما ناتج ضرب: 8 × 9؟", opts: ["64", "70", "72", "80"], corr: 2 },
+    { q: "ما ناتج ضرب: 15 × 4؟", opts: ["50", "55", "60", "65"], corr: 2 },
+    { q: "ما ناتج ضرب: 7 × 7؟", opts: ["42", "48", "49", "56"], corr: 2 },
+    { q: "ما ناتج ضرب: 14 × 3؟", opts: ["38", "40", "42", "44"], corr: 2 },
+    { q: "ما ناتج ضرب: 6 × 9؟", opts: ["52", "54", "56", "58"], corr: 1 },
+    { q: "ما ناتج ضرب: 25 × 4؟", opts: ["80", "90", "100", "110"], corr: 2 },
+    { q: "ما ناتج ضرب: 11 × 8؟", opts: ["78", "88", "98", "108"], corr: 1 },
 
-const piecesContainer =
-    document.getElementById("pieces-container");
+    // قسم القسمة
+    { q: "ما ناتج قسمة: 81 ÷ 9؟", opts: ["7", "8", "9", "10"], corr: 2 },
+    { q: "ما ناتج قسمة: 144 ÷ 12؟", opts: ["10", "11", "12", "14"], corr: 2 },
+    { q: "ما ناتج قسمة: 50 ÷ 5؟", opts: ["5", "10", "15", "20"], corr: 1 },
+    { q: "ما ناتج قسمة: 64 ÷ 8؟", opts: ["6", "7", "8", "9"], corr: 2 },
+    { q: "ما ناتج قسمة: 100 ÷ 4؟", opts: ["20", "25", "30", "50"], corr: 1 },
+    { q: "ما ناتج قسمة: 36 ÷ 6؟", opts: ["4", "5", "6", "7"], corr: 2 },
+    { q: "ما ناتج قسمة: 72 ÷ 9؟", opts: ["6", "7", "8", "9"], corr: 2 },
+    { q: "ما ناتج قسمة: 45 ÷ 5؟", opts: ["7", "8", "9", "10"], corr: 2 },
+    { q: "ما ناتج قسمة: 120 ÷ 10؟", opts: ["10", "12", "15", "20"], corr: 1 },
+    { q: "ما ناتج قسمة: 56 ÷ 7؟", opts: ["6", "7", "8", "9"], corr: 2 },
+    { q: "ما ناتج قسمة: 48 ÷ 6؟", opts: ["6", "7", "8", "9"], corr: 2 },
+    { q: "ما ناتج قسمة: 30 ÷ 3؟", opts: ["5", "10", "15", "20"], corr: 1 },
+    { q: "ما ناتج قسمة: 90 ÷ 9؟", opts: ["5", "10", "15", "20"], corr: 1 },
+    { q: "ما ناتج قسمة: 24 ÷ 4؟", opts: ["4", "5", "6", "8"], corr: 2 },
+    { q: "ما ناتج قسمة: 108 ÷ 9؟", opts: ["10", "11", "12", "13"], corr: 2 },
+    { q: "ما ناتج قسمة: 18 ÷ 2؟", opts: ["8", "9", "10", "12"], corr: 1 },
+    { q: "ما ناتج قسمة: 75 ÷ 25؟", opts: ["2", "3", "4", "5"], corr: 1 },
+    { q: "ما ناتج قسمة: 60 ÷ 12؟", opts: ["4", "5", "6", "10"], corr: 1 },
+    { q: "ما ناتج قسمة: 42 ÷ 7؟", opts: ["5", "6", "7", "8"], corr: 1 },
+    { q: "ما ناتج قسمة: 1000 ÷ 100؟", opts: ["5", "10", "50", "100"], corr: 1 },
 
-const gameContainer =
-    document.getElementById("game-container");
+    // أسئلة متنوعة متقدمة (عمليات مركبة وتحدي)
+    { q: "ما ناتج: (5 + 5) × 3؟", opts: ["25", "30", "35", "40"], corr: 1 },
+    { q: "ما ناتج: 20 - (4 × 3)؟", opts: ["6", "8", "12", "16"], corr: 1 },
+    { q: "ما ناتج: 50 ÷ (5 + 5)؟", opts: ["5", "10", "25", "50"], corr: 0 },
+    { q: "ما ناتج: (12 ÷ 4) + (3 × 3)؟", opts: ["9", "10", "12", "15"], corr: 2 },
+    { q: "ما ناتج: 15 + (10 × 2)؟", opts: ["30", "35", "40", "50"], corr: 1 },
+    { q: "ما ناتج: 100 - (25 × 2)؟", opts: ["25", "50", "75", "100"], corr: 1 },
+    { q: "ما ناتج: (8 × 8) - 16؟", opts: ["40", "48", "52", "60"], corr: 1 },
+    { q: "ما ناتج: 80 ÷ (10 - 2)؟", opts: ["5", "8", "10", "16"], corr: 2 },
+    { q: "ما ناتج: (7 + 3) × (10 - 5)؟", opts: ["40", "45", "50", "55"], corr: 2 },
+    { q: "ما ناتج: 36 ÷ 4 + 5؟", opts: ["12", "14", "16", "18"], corr: 1 },
+    { q: "ما ناتج: 9 + 9 × 0؟", opts: ["0", "9", "18", "81"], corr: 1 },
+    { q: "ما ناتج: 45 ÷ 9 + 5 × 2؟", opts: ["15", "19", "25", "28"], corr: 0 },
+    { q: "ما ناتج: (100 - 20) ÷ 4؟", opts: ["10", "15", "20", "25"], corr: 2 },
+    { q: "ما ناتج: 7 × 8 - 15؟", opts: ["41", "43", "45", "49"], corr: 1 },
+    { q: "ما ناتج: 144 ÷ 12 + 12؟", opts: ["20", "22", "24", "26"], corr: 2 },
+    { q: "ما ناتج: 50 + 50 ÷ 2؟", opts: ["50", "75", "100", "125"], corr: 1 },
+    { q: "ما ناتج: (15 - 5) × (20 ÷ 4)؟", opts: ["40", "50", "60", "100"], corr: 1 },
+    { q: "ما ناتج: 33 + 33 - 33؟", opts: ["0", "33", "66", "99"], corr: 1 },
+    { q: "ما ناتج: 2 شعاع ضرب 10؟ (2 × 10 ÷ 2)", opts: ["5", "10", "20ية", "15"], corr: 1 },
+    { q: "ما هو العدد الذي إذا ضربته في نفسه كان الناتج 49؟", opts: ["6", "7", "8", "9"], corr: 1 }
+];
+const sportsQuestions100 = [
+    // كرة القدم العالمية والمحلية
+    { q: "كم عدد لاعبي فريق كرة القدم الأساسي على أرض الملعب؟", opts: ["9 لاعبيين", "10 لاعبيين", "11 لاعباً", "12 لاعباً"], corr: 2 },
+    { q: "ما هي الدولة التي فازت ببطولة كأس العالم لكرة القدم عام 2022؟", opts: ["البرازيل", "فرنسا", "الأرجنتين", "ألمانيا"], corr: 2 },
+    { q: "من هو اللاعب الملقب بـ 'البرغوث'؟", opts: ["كريستيانو رونالدو", "ليونيل ميسي", "نيمار جونيور", "كيليان مبابي"], corr: 1 },
+    { q: "كم تبلغ مدة مباراة كرة القدم الرسمية (بدون وقت إضافي)؟", opts: ["80 دقيقة", "90 دقيقة", "100 دقيقة", "120 دقيقة"], corr: 1 },
+    { q: "أي نادي يحمل الرقم القياسي في عدد التتويج ببطولة دوري أبطال أوروبا؟", opts: ["برشلونة", "بايرن ميونخ", "ريال مدريد", "ميلان"], corr: 2 },
+    { q: "من هو اللاعب الملقب بـ 'الدون'؟", opts: ["كريستيانو رونالدو", "ليونيل ميسي", "رونالدينيو", "زين الدين زيدان"], corr: 0 },
+    { q: "ما هو النادي الذي يسمى 'الشياطين الحمر' في الدوري الإنجليزي؟", opts: ["ليفربول", "مانشستر سيتي", "مانشستر يونايتد", "أرسنال"], corr: 2 },
+    { q: "في أي عام أُقيمت أول بطولة كأس العالم لكرة القدم؟", opts: ["1920", "1930", "1950", "1942"], corr: 1 },
+    { q: "ما هو لون بطاقة الإنذار التي تعني الطرد المباشر في كرة القدم؟", opts: ["الصفراء", "الحمراء", "الخضراء", "الزرقاء"], corr: 1 },
+    { q: "كم مسافة ركلة الجزاء عن خط المرمى في كرة القدم؟", opts: ["9 أمتار", "11 متراً (12 ياردة)", "14 متراً", "16 متراً"], corr: 1 },
+    { q: "من هو اللاعب الذي يحمل لقب اله التاريخي لدوري أبطال أوروبا؟", opts: ["كريستيانو رونالدو", "ليونيل ميسي", "روبرت ليفاندوفسكي", "ريموند كوبا"], corr: 0 },
+    { q: "ما هو المنتخب الملقب بـ 'السامبا'؟", opts: ["الأرجنتين", "البرازيل", "إيطاليا", "إسبانيا"], corr: 1 },
+    { q: "ما هو المنتخب الملقب بـ 'الآزوري'؟", opts: ["فرنسا", "إيطاليا", "ألمانيا", "البرتغال"], corr: 1 },
+    { q: "أي منتخب لقب بـ 'الماكينات الألمانية'؟", opts: ["ألمانيا", "إنجلترا", "هولندا", "بلجيكا"], corr: 0 },
+    { q: "أي نادي يُلقب بـ 'السيدة العجوز' في الدوري الإيطالي؟", opts: ["إنتر ميلان", "يوفنتوس", "إيه سي ميلان", "روما"], corr: 1 },
+    { q: "من هو المدرب الشهير الملقب بـ 'السبيشال وان' (الاستثنائي)؟", opts: ["بيب غوارديولا", "كارلو أنشيلوتي", "جوزيه مورينيو", "يورغن كلوب"], corr: 2 },
+    { q: "كم عدد تبديلات الفريق الواحد المسموح بها رسمياً في المباريات الحديثة (الوقائع الطبيعية)؟", opts: ["3 تبديلات", "4 تبديلات", "5 تبديلات", "6 تبديلات"], corr: 2 },
+    { q: "ما هو اسم ملعب نادي برشلونة الإسباني التاريخي؟", opts: ["سانتياغو برنابيو", "كامب نو", "واندا ميتروبوليتانو", "أنفيلد"], corr: 1 },
+    { q: "ما هو اسم ملعب نادي ريال مدريد الإسباني؟", opts: ["كامب نو", "سانتياغو برنابيو", "ميستايا", "سان ماميس"], corr: 1 },
+    { q: "من هو المنتخب الأكثر تتويجاً ببطولة كأس أمم إفريقيا؟", opts: ["الكاميرون", "غانا", "مصر", "المغرب"], corr: 2 },
 
-const originalImage =
-    document.getElementById("original-image");
+    // كرة السلة والألعاب الجماعية الأخرى
+    { q: "كم عدد لاعبي فريق كرة السلة الأساسي على الملعب؟", opts: ["4 لاعبيين", "5 لاعبيين", "6 لاعبيين", "7 لاعبيين"], corr: 1 },
+    { q: "من هو أسطورة كرة السلة الأمريكية الذي ارتدى الرقم 23 مع شيكاغو بولز؟", opts: ["كوبي براينت", "مايكل جوردان", "ليبرون جيمس", "شاكيل أونيل"], corr: 1 },
+    { q: "ما هي المدة الزمنية لشوط مباراة كرة السلة في الدوري الأمريكي (NBA) للربع الواحد؟", opts: ["10 دقائق", "12 دقيقة", "15 دقيقة", "20 دقيقة"], corr: 1 },
+    { q: "كم عدد لاعبي فريق كرة الطائرة داخل الملعب لكل فريق؟", opts: ["5 لاعبيين", "6 لاعبيين", "7 لاعبيين", "8 لاعبيين"], corr: 1 },
+    { q: "كم عدد لاعبي فريق كرة اليد على الملعب؟", opts: ["5 لاعبيين", "6 لاعبيين", "7 لاعبيين", "8 لاعبيين"], corr: 2 },
+    { q: "ما هي الرياضة التي تُلعب بمضرب صغير وكرة صلبة صغيرة على طاولة مغطاة بشبكة؟", opts: ["التنس الأرضي", "تنس الطاولة (البينج بونج)", "الريشة الطائرة", "الاسكواش"], corr: 1 },
+    { q: "كم عدد أشواط مباراة كرة السلة الرسمية (بدون وقت إضافي)؟", opts: ["شوطان", "ثلاثة أشواط", "أربعة أرباع (أشواط)", "خمسة أشواط"], corr: 2 },
+    { q: "ما هي الدولة المبتكرة للعبة كرة السلة؟", opts: ["الولايات المتحدة الأمريكية", "كندا", "إنجلترا", "فرنسا"], corr: 0 },
+    { q: "في أي لعبة تُستخدم مصطلحات مثل 'دانك' (Slam Dunk) و'ثلاثية'؟", opts: ["كرة القدم", "كرة السلة", "البيسبول", "الركبي"], corr: 1 },
+    { q: "ما هي الرياضة الجماعية التي تُلعب على الجليد وتستخدم فيها العصي لضرب قرص صلب؟", opts: ["هوكي الجليد", "الكيرلنغ", "التزلج السريع", "البياثلون"], corr: 0 },
 
-const statusBox =
-    document.getElementById("status");
+    // الألعاب الفردية والأولمبية
+    { q: "ما هي المسافة الرسمية لسباق الماراثون الأولمبي؟", opts: ["40 كيلومتراً", "42.195 كيلومتراً", "45 كيلومتراً", "50 كيلومتراً"], corr: 1 },
+    { q: "من هو العداء الأقدم والأسرع في التاريخ صاحب الرقم القياسي لسباق 100 متر؟", opts: ["كارل لويس", "يوساين بولت", "جاستن غاتلين", "أسافا باول"], corr: 1 },
+    { q: "ما هي المدينة التي استضافت دورة الألعاب الأولمبية الصيفية لعام 2024؟", opts: ["طوكيو", "باريس", "لندن", "ريو دي جانيرو"], corr: 1 },
+    { q: "كم عدد حلقات العلم الأولمبي الرسمي؟", opts: ["3 حلقات", "4 حلقات", "5 حلقات", "6 حلقات"], corr: 2 },
+    { q: "ما هي ألوان حلقات العلم الأولمبي؟", opts: ["أحمر، أخضر، أصفر، أزرق، أسود", "أبيض، أحمر، أخضر، أسود، برتقالي", "أزرق، وردي، أصفر، أخضر، بني", "أصفر، أسود، رمادي، أحمر، أبيض"], corr: 0 },
+    { q: "في أي رياضة يُعرف محمد علي كلاي بأنه أسطورتها الخالدة؟", opts: ["المصارعة الحرة", "الملاكمة", "الكاراتيه", "الجودو"], corr: 1 },
+    { q: "ما هي البطولات الأربع الكبرى في التنس (الغراند سلام) كم عددها؟", opts: ["3 بطولات", "4 بطولات", "5 بطولات", "6 بطولات"], corr: 1 },
+    { q: "من هو اللاعب الأجنبي الأكثر تحقيقاً لبطولات الغراند سلام في تاريخ تنس الرجال (حتى الأعوام الأخيرة)؟", opts: ["رفائيل نادال أو نوفاك ديوكوفتش", "روجر فيدرير", "بيت سامبرس", "أندي موراي"], corr: 0 },
+    { q: "ما هي الرياضة التي تُعرف بـ 'الفن الصامت' وتعتمد على السلاح والدفاع والهجوم بالرماح؟", opts: ["المبارزة (السلاح)", "الرماية", "الفروسية", "الجولف"], corr: 0 },
+    { q: "ما هي الدول التي أُقيمت فيها أول دورة ألعاب أولمبية حديثة في عام 1896؟", opts: ["إيطاليا", "اليونان (أثينا)", "فرنسا", "بريطانيا"], corr: 1 },
 
-const winMessage =
-    document.getElementById("win-message");
+    // رياضة السيارات والدراجات والملاكمة والقتال
+    { q: "ما هي البطولة الأشهر لسباقات سيارات الفورمولا 1؟", opts: ["موتو جي بي", "الفورمولا 1 (F1)", "رالي داكار", "ناسكار"], corr: 1 },
+    { q: "من هو السائق الأسطوري البريطاني الحاصل على 7 ألقاب في بطولة العالم للفورمولا 1 (متساوي مع شوماخر)؟", opts: ["ماكس فيرستابين", "لويس هاميلتون", "فرناندو ألونسو", "سيباستيان فيتل"], corr: 1 },
+    { q: "ما هو الاسم الذي يطلق على الحلبة الخاصة بسباق الفورمولا 1 في موناكو؟", opts: ["حلبة مونزا", "حلبة موناكو الشارعية (سيركويت دي مونتي كارلو)", "حلبة سيلفرستون", "حلبة سبا فرانكورشان"], corr: 1 },
+    { q: "ما هي منظمة الفنون القتالية المختلطة الأشهر في العالم (MMA)؟", opts: ["WWE", "UFC", "Bellator", "ONE Championship"], corr: 1 },
+    { q: "من هو المقاتل الروسي الأسطوري المعتزل في الـ UFC الذي حافظ على سجله خالياً من الهزائم (29-0)؟", opts: ["كونور مكغريغور", "حبيب نورماغوميدوف", "جون جونز", "إسلام ماخاشيف"], corr: 1 },
+    { q: "ما هي الرياضة التي تقام على حلبة مغطاة بالحبال وتعتمد على اللكمات بالقفازات؟", opts: ["الملاكمة", "الكيك بوكسينغ", "المصارعة", "الجودو"], corr: 0 },
+    { q: "ما هو لقب سباق الدراجات الهوائية الأشهر في العالم والذي يقام سنوياً في فرنسا؟", opts: ["طواف إيطاليا", "طواف فرنسا (تور دي فرانس)", "طواف إسبانيا", "سباق سويسرا"], corr: 1 },
+    { q: "ما هي الرياضة التي تُمارس باستخدام عصا طويلة لإدخال كرة صغيرة في حفرة على مساحات عشبية واسعة؟", opts: ["البيسبول", "الكريكت", "الجولف", "البولو"], corr: 2 },
+    { q: "في أي رياضة يُمنح الفائز حزاماً مرصعاً بالأحجار أو الذهب كرمز للبطولة؟", opts: ["كرة القدم", "الملاكمة والفنون القتالية", "السباحة", "رفع الأثقال"], corr: 1 },
+    { q: "ما هي الرياضة التي يتنافس فيها اللاعبون على صكّ كرة بملعب كبير باستخدام المضرب والخيل؟", opts: ["البولو", "هوكي الحقل", "الرجبي", "الكريكيت"], corr: 0 },
+
+    // معلومات عامة متنوعة وأرقام قياسية رياضية
+    { q: "ما هي الدولة المنظمة لكأس العالم لكرة القدم 2026؟", opts: ["قطر", "الولايات المتحدة وكندا والمكسيك", "إسبانيا والبرتغال", "أستراليا"], corr: 1 },
+    { q: "من هو اللاعب الحائز على لقب هداف كأس العالم التاريخي في نسخة واحدة (موسم واحد)؟", opts: ["بيليه", "جاست فونتين", "رونالدو البرازيلي", "ميروسلاف كلوزه"], corr: 1 },
+    { q: "ما هو النادي الأكثر تتويجاً ببطولة الدوري الإنجليزي الممتاز (البريميرليغ)؟", opts: ["ليفربول", "مانشستر يونايتد", "مانشستر سيتي", "أرسنال"], corr: 1 },
+    { q: "ما هي الدولة التي ابتكرت لعبة كرة القدم الحديثة بقوانينها الحالية؟", opts: ["البرازيل", "إنجلترا", "إيطاليا", "ألمانيا"], corr: 1 },
+    { q: "كم عدد اللاعبين الاحتياطيين الذين يمكن تسجيلهم على دكة البدلاء في مباريات الفيفا الرسمية الحديثة؟", opts: ["7 لاعبين", "9 لاعبين", "12 لاعباً أو أكثر حسب البطولة", "5 لاعبين"], corr: 2 },
+    { q: "من هو أول لاعب كرة قدم يفوز بجائزة الكرة الذهبية (البالون دور)؟", opts: ["بيليه", "ستانلي ماثيوز", "ألفريدو دي ستيفانو", "كريستيانو رونادلو"], corr: 1 },
+    { q: "أي منتخب حقق لقب كأس العالم لعام 2018؟", opts: ["كرواتيا", "فرنسا", "البرازيل", "ألمانيا"], corr: 1 },
+    { q: "أي منتخب حقق لقب كأس العالم لعام 2014؟", opts: ["الأرجنتين", "ألمانيا", "البرازيل", "هولندا"], corr: 1 },
+    { q: "ما هي الدولة العربية الأولى التي استضافت نهائيات كأس العالم لكرة القدم؟", opts: ["المغرب", "الإمارات", "قطر", "مصر"], corr: 2 },
+    { q: "ما هي الدولة العربية الأولى التي صعدت لدور الـ 16 في كأس العالم لكرة القدم؟", opts: ["المغرب (1986)", "السعودية (1994)", "الجزائر (2014)", "تونس (1978)"], corr: 0 },
+
+    // أسئلة إضافية لإكمال الـ 100 سؤال بدقة وتنوع مذهل
+    { q: "ما هي أطول مدة لشوط إضافي في مباريات كأس العالم (الوقت الإضافي الكامل)؟", opts: ["20 دقيقة", "30 دقيقة مقسمة على شوطين", "40 دقيقة", "لا توجد أوقات إضافية"], corr: 1 },
+    { q: "ما هو النادي العربي أو الآسيوي الأكثر تتويجاً ببطولة دوري أبطال آسيا؟", opts: ["الهلال السعودي", "الزمالك", "العين الإماراتي", "أوراوا ريد دياموندز"], corr: 0 },
+    { q: "ما هو اسم الكأس المقدمة لبطل كأس العالم لكرة القدم؟", opts: ["كأس جول ريميه (سابقاً) وكأس العالم FIFA حالياً", "كأس الاتحاد", "كأس الذهب الخالص", "كأس القارات"], corr: 0 },
+    { q: "ما هي الدولة التي فازت بأول بطولة كأس أمم إفريقيا لكرة القدم تاريخياً؟", opts: ["مصر", "غانا", "السودان", "إثيوبيا"], corr: 0 },
+    { q: "من هو اللاعب العربي الحائز على جائزة أفضل لاعب في إفريقيا عدة مرات وتألق مع ليفربول؟", opts: ["رياض محرز", "محمد صلاح", "حكيم زياش", "ساديو ماني"], corr: 1 },
+    { q: "ما هو المنتخب العالمي الملقب بـ 'الشياطين الحمر' في كرة القدم الدولية؟", opts: ["إنجلترا", "بلجيكا", "تركيا", "الدنمارك"], corr: 1 },
+    { q: "ما هي الرياضة التي تُلعب على الخيل وتعتمد على إدخال كرة في مرمى الخصم باستخدام مطارق طويلة؟", opts: ["البولو", "قفز الحواجز", "سباق الهجن", "الفروسية"], corr: 0 },
+    { q: "في أي عام أقيمت أول بطولة دوري أبطال أوروبا (كأس الأندية الأوروبية البطلة سابقاً)؟", opts: ["1950", "1955", "1960", "1970"], corr: 1 },
+    { q: "ما هو النادي الإيطالي الذي لم يهبط أبداً إلى الدرجة الثانية حتى موسم حديث؟", opts: ["إنتر ميلان", "يوفنتوس", "ميلان", "روما"], corr: 0 },
+    { q: "ما هو الفريق الحائز على لقب الدوري الإسباني (الليغا) لأكثر عدد مرات تاريخياً؟", opts: ["برشلونة", "ريال مدريد", "أتلتيكو مدريد", "فالنسيا"], corr: 1 },
+
+    { q: "كم يبلغ طول ملعب كرة القدم الرسمي المعتمد من الفيفا (المعياري)؟", opts: ["90 متراً", "من 100 إلى 110 متراً", "120 متراً", "80 متراً"], corr: 1 },
+    { q: "كم يبلغ عرض ملعب كرة القدم الرسمي المعتمد من الفيفا (المعياري)؟", opts: ["45 متراً", "من 64 إلى 75 متراً", "80 متراً", "90 متراً"], corr: 1 },
+    { q: "ما هو اسم الحارس المكسيكي الشهير الملقب بـ 'الحارس الطائر' والذي يتألق في المونديال؟", opts: ["جييرمو أوتشوا", "بوفون", "نوير", "كاسياس"], corr: 0 },
+    { q: "من هو اللاعب البرازيلي الأسطوري الوحيد الذي فاز بـ 3 ألقاب لكأس العالم كلاعب؟", opts: ["رونالدو", "بيليه", "رونالدينيو", "كاكا"], corr: 1 },
+    { q: "ما هي الدولة التي استضافت أول بطولة كأس أمم أوروبا (يورو) عام 1960؟", opts: ["فرنسا", "إسبانيا", "إيطاليا", "ألمانيا"], corr: 0 },
+    { q: "ما هو المنتخب الأكثر تتويجاً ببطولة كأس أمم أوروبا (اليورو) بالتساوي؟", opts: ["إسبانيا وألمانيا", "فرنسا وإيطاليا", "إنجلترا والبرتغال", "هولندا والبرازيل"], corr: 0 },
+    { q: "من هو صاحب أسرع هدف في تاريخ بطولات كأس العالم لكرة القدم؟", opts: ["هاكان شوكور (تركيا)", "بيليه", "مارادونا", "كريستيانو رونالدو"], corr: 0 },
+    { q: "ما هو اسم الكرة الرسمية لمونديال قطر 2022؟", opts: ["الجزء", "الرحلة", "الرؤيا", "البرازوكا"], corr: 1 },
+    { q: "في أي رياضة يُستخدم مصطلح 'الهاتريك' (Hat-trick) للدلالة على تسجيل ثلاثة أهداف؟", opts: ["كرة القدم ومختلف الألعاب الرياضية", "السباحة فقط", "التنس فقط", "السباق فقط"], corr: 0 },
+    { q: "ما هي الدولة التي فازت بأول لقب لكأس العالم للبنات (تحت 20 أو السيدات عموماً) بشعبية جارفة؟", opts: ["الولايات المتحدة الأمريكية", "ألمانيا", "البرازيل", "اليابان"], corr: 0 },
+
+    { q: "من هو اللاعب الفرنسي الذي سجل هدف الفوز الشهير في نهائي كأس العالم 1998 برأسه مرتين؟", opts: ["زين الدين زيدان", "تييري هنري", "ديديه ديشامب", "دافيد تريزيغيه"], corr: 0 },
+    { q: "ما هو النادي الإنجليزي الذي حقق الدوري بدون أي هزيمة موسم 2003-2004 (اللاهازمون)؟", opts: ["مانشستر يونايتد", "أرسنال", "تشيلسي", "ليفربول"], corr: 1 },
+    { q: "كم عدد اللاعبين الأساسيين لفريق الكريكيت داخل الملعب؟", opts: ["9 لاعبيين", "11 لاعباً", "13 لاعباً", "7 لاعبيين"], corr: 1 },
+    { q: "ما هي الرياضة الجماعية التي تعتمد على حوض سباحة ورمي الكرة في مرمى الخصم شبيه بكرة اليد؟", opts: ["كرة الماء (Water Polo)", "السباحة الاستعراضية", "الغوص", "السباحة الحرة"], corr: 0 },
+    { q: "من هو بطل العالم التاريخي في رياضة الشطرنج الحديثة لسنوات طويلة من روسيا؟", opts: ["غاري كاسباروف", "ماغنوس كارلسن", "بوبي فيشر", "بورس سباسكي"], corr: 1 },
+    { q: "ما هو اسم الكأس الشهيرة التي تُمنح للفائز بدوري المحترفين الأمريكي لكرة السلة (NBA)؟", opts: ["كأس لاري أوبراين", "كأس ستانلي", "كأس فنسنت", "كأس الكومباس"], corr: 0 },
+    { q: "ما هي الرياضة التي تُلعب باستخدام طائرة ورقية ضخمة ولوح تزلج فوق الأمواج؟", opts: ["الكايت سرفينغ (التزلج الشراعي على الماء)", "الركمجة التقليدية", "التزلج السريع", "التجذيف"], corr: 0 },
+    { q: "ما هي الدولة التي تُعتبر المهد الرئيسي للعبة الرجبي (Rugby)؟", opts: ["إنجلترا", "أستراليا", "نيوزيلندا", "جنوب إفريقيا"], corr: 0 },
+    { q: "ما هو المنتخب الأكثر فوزاً ببطولة كأس العالم للرجبي تاريخياً؟", opts: ["إنجلترا", "نيوزيلندا (الآول بلاكس)", "أستراليا", "جنوب إفريقيا"], corr: 1 },
+    { q: "من هو اللاعب الأرجنتيني الأسطوري الراحل الذي قاد منتخب بلاده للقب مونديال 1986 بهدف 'يد الله'؟", opts: ["دييغو مارادونا", "ليونيل ميسي", "ماريو كيمبيس", "باتيستوتا"], corr: 0 },
+
+    { q: "ما هي المدينة التي استضافت دورة الألعاب الأولمبية الصيفية لعام 2008؟", opts: ["بكين (الصين)", "لندن (بريطانيا)", "أثينا (اليونان)", "سيدني (أستراليا)"], corr: 0 },
+    { q: "ما هو النادي الأكثر تتويجاً ببطولة كأس إيطاليا لكرة القدم تاريخياً؟", opts: ["يوفنتوس", "روما", "إنتر ميلان", "لاتسيو"], corr: 0 },
+    { q: "ما هو النادي الأكثر تتويجاً ببطولة كأس ملك إسبانيا تاريخياً؟", opts: ["ريال مدريد", "برشلونة", "أتلتيك بيلباو", "فالنسيا"], corr: 1 },
+    { q: "كم يبلغ ارتفاع سلة كرة السلة عن سطح الأرض بالقياس الرسمي؟", opts: ["2.50 متر", "3.05 متر (10 قدم)", "3.50 متر", "2.80 متر"], corr: 1 },
+    { q: "ما هو الاسم الذي يطلق على مباراة القمة التقليدية بين ريال مدريد وبرشلونة؟", opts: ["ديربي مدريد", "الكلاسيكو (El Clásico)", "ديربي الكتلان", "كلاسيكو أوروبا"], corr: 1 },
+    { q: "ما هو اسم الديربي الشهير الذي يجمع بين إنتر ميلان وإيه سي ميلان؟", opts: ["ديربي الغضب (ديربي ديلا مادونينا)", "ديربي العاصمة", "ديربي إيطاليا", "ديربي الشمس"], corr: 0 },
+    { q: "ما هي الرياضة التي تقام فيها منافسات على جليد مرتفع باستخدام زلاجات جماعية سريعة جداً؟", opts: ["الزلاجة الجماعية (Bobsleigh)", "التزلج الفني", "الهوكي", "التزلج الريفي"], corr: 0 },
+    { q: "من هو السائق الألماني الأسطوري الفائز بـ 7 أبطال لعالم الفورمولا 1؟", opts: ["مايكل شوماخر", "سيباستيان فيتل", "نيكو روزبرغ", "ميكا هاكينن"], corr: 0 },
+    { q: "ما هي الدولة الأكثر تتويجاً بميداليات دورة الألعاب الأولمبية الصيفية عبر التاريخ؟", opts: ["الولايات المتحدة الأمريكية", "الصين", "بريطانيا", "روسيا"], corr: 0 },
+    { q: "ما هو الحد الأقصى لعدد الأندية المشاركة في الدوري الإنجليزي الممتاز (البريميرليغ) حالياً؟", opts: ["18 نادياً", "20 نادياً", "22 نادياً", "24 نادياً"], corr: 1 }
+];
 
 
-const TOTAL =
-    9;
+    
 
+// الإصدار المطوّر: دمج جميع البنوك الأصلية في مخزن واحد، ثم اختيار 300 سؤال دون تكرار داخل الجولة.
+const masterQuestionPool = [
+  ...spaceQuestions100.map(x=>({...x,category:'الفضاء والعلوم',icon:'🚀'})),
+  ...religionQuestions100.map(x=>({...x,category:'الدين والثقافة الإسلامية',icon:'🕌'})),
+  ...iraqHistoryQuestions100.map(x=>({...x,category:'تاريخ العراق',icon:'🇮🇶'})),
+  ...animalsQuestions100.map(x=>({...x,category:'الحيوانات',icon:'🐾'})),
+  ...mathQuestions100.map(x=>({...x,category:'الرياضيات',icon:'➗'})),
+  ...sportsQuestions100.map(x=>({...x,category:'الرياضة',icon:'⚽'}))
+].filter(x=>x && typeof x.q==='string' && Array.isArray(x.opts) && x.opts.length===4 && Number.isInteger(x.corr) && x.corr>=0 && x.corr<4);
 
-let currentImage =
-    "";
-
-let draggedTile =
-    null;
-
-let selectedTile =
-    null;
-
-let hasWon =
-    false;
-
-
-/* ==================================================
-   بدء اللعبة
-================================================== */
-
-function startGame(imageName) {
-
-    currentImage =
-        imageName;
-
-    originalImage.src =
-        imageName;
-
-    gameContainer.style.display =
-        "flex";
-
-    winMessage.style.display =
-        "none";
-
-    hasWon =
-        false;
-
-    selectedTile =
-        null;
-
-    draggedTile =
-        null;
-
-    createBoard();
-
-    createPieces();
-
-    shuffleGame();
-
-    updateStatus();
-
+const stages=[
+ {name:'المرحلة الأولى — البداية الذهبية',level:'سهل',time:35},
+ {name:'المرحلة الثانية — طريق التحدي',level:'متوسط',time:30},
+ {name:'المرحلة الثالثة — الكنز الأخير',level:'صعب',time:25}
+];
+const characters=[{name:'حساني',avatar:'👦',intro:'ركز جيداً، أنت قادر على الإجابة!'},{name:'آدم',avatar:'🧒🏽',intro:'فكر بهدوء قبل أن تختار.'},{name:'إلياس',avatar:'👦🏻',intro:'سؤال جديد… هل أنت مستعد؟'}];
+const prizeLevels=[100,250,500,1000,2000,4000,8000,16000,32000,64000,125000,250000,500000,750000,1000000];
+let state={player:'',mode:'classic',stage:0,index:0,questions:[],score:0,correct:0,totalTime:0,remaining:30,used50:false,usedHint:false,usedSkip:false,startedAt:0,questionStartedAt:0,paused:false};
+let timerId=null, audioCtx=null;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function makeQuestions(count){
+ const pool=shuffle(masterQuestionPool); const out=[]; const seen=new Set();
+ for(const q of pool){const key=q.q.trim();if(!seen.has(key)){seen.add(key);out.push({...q,opts:[...q.opts]});} if(out.length>=count)break;}
+ return out;
 }
-
-
-/* ==================================================
-   إنشاء لوحة الحل
-================================================== */
-
-function createBoard() {
-
-    board.innerHTML =
-        "";
-
-    for (
-        let i = 0;
-        i < TOTAL;
-        i++
-    ) {
-
-        const zone =
-            document.createElement("div");
-
-        zone.className =
-            "drop-zone";
-
-        /*
-         * رقم المكان الصحيح
-         */
-
-        zone.dataset.index =
-            i;
-
-        zone.dataset.number =
-            i + 1;
-
-
-        /* =========================
-           Drag Over
-        ========================= */
-
-        zone.addEventListener(
-            "dragover",
-            function(event) {
-
-                event.preventDefault();
-
-                zone.classList.add(
-                    "drag-over"
-                );
-
-            }
-        );
-
-
-        /* =========================
-           Drag Leave
-        ========================= */
-
-        zone.addEventListener(
-            "dragleave",
-            function() {
-
-                zone.classList.remove(
-                    "drag-over"
-                );
-
-            }
-        );
-
-
-        /* =========================
-           Drop
-        ========================= */
-
-        zone.addEventListener(
-            "drop",
-            function(event) {
-
-                event.preventDefault();
-
-                zone.classList.remove(
-                    "drag-over"
-                );
-
-
-                if (!draggedTile) {
-
-                    return;
-
-                }
-
-
-                moveTileToZone(
-                    draggedTile,
-                    zone
-                );
-
-
-                draggedTile =
-                    null;
-
-
-                updateStatus();
-
-                checkWin(true);
-
-            }
-        );
-
-
-        board.appendChild(
-            zone
-        );
-
-    }
-
+function persist(){localStorage.setItem('treasureGameSave',JSON.stringify(state));$('continueBtn').classList.remove('hidden')}
+function clearSave(){localStorage.removeItem('treasureGameSave');$('continueBtn').classList.add('hidden')}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem('treasureGameSave'));if(s&&Array.isArray(s.questions)&&s.questions.length){state=s;return true}}catch(e){}return false}
+function show(id){['startScreen','gameScreen','resultScreen'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
+function beep(freq=600,duration=.08,type='sine'){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.06,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+duration);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration+.02)}catch(e){}}
+function speak(text){if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='ar-SA';u.rate=.98;window.speechSynthesis.speak(u)}
+function startNew(){clearSave();state={player:($('playerName').value.trim()||'البطل'),mode:$('difficulty').value,stage:0,index:0,questions:makeQuestions($('difficulty').value==='short'?30:300),score:0,correct:0,totalTime:0,remaining:stages[0].time,used50:false,usedHint:false,usedSkip:false,startedAt:Date.now(),questionStartedAt:Date.now(),paused:false};show('gameScreen');render();}
+function startContinue(){if(!loadSave())return;show('gameScreen');state.paused=false;render();toast('تمت استعادة تقدمك بنجاح');}
+function current(){return state.questions[state.index]}
+function render(){
+ if(state.index>=state.questions.length){finish(true);return;}
+ const q=current();const stage=Math.min(2,Math.floor(state.index/100));state.stage=stage;const localIndex=state.mode==='short'?state.index%10:state.index%100;
+ $('stageText').textContent=`${stages[stage].name} • السؤال ${localIndex+1} / ${state.mode==='short'?10:100}`;
+ $('moneyText').textContent=`💰 ${prizeLevels[Math.min(prizeLevels.length-1,state.index%prizeLevels.length)].toLocaleString('en-US')}`;
+ $('progressFill').style.width=((state.index+1)/state.questions.length*100)+'%';$('categoryBadge').textContent=q.category;$('category').textContent=`${q.icon} ${q.category}`;
+ const ch=characters[state.index%characters.length];$('avatar').textContent=ch.avatar;$('speaker').textContent=ch.name;$('speech').textContent=ch.intro;
+ $('question').textContent=q.q;$('feedback').textContent='';$('feedback').className='feedback';
+ const labels=['أ','ب','ج','د'];const box=$('options');box.innerHTML='';q.opts.forEach((opt,i)=>{const b=document.createElement('button');b.className='option';b.innerHTML=`<span class="letter">${labels[i]}</span>${opt}`;b.onclick=()=>answer(i);box.appendChild(b)});
+ state.remaining=stages[stage].time;state.questionStartedAt=Date.now();state.used50=false;state.usedHint=false;state.usedSkip=false;updateLifeButtons();startTimer();persist();
+ speak(`${ch.intro} ${q.q}`);
 }
-
-
-/* ==================================================
-   إنشاء قطع الصورة
-================================================== */
-
-function createPieces() {
-
-    piecesContainer.innerHTML =
-        "";
-
-    for (
-        let i = 0;
-        i < TOTAL;
-        i++
-    ) {
-
-        const tile =
-            document.createElement("div");
-
-
-        tile.className =
-            "tile";
-
-
-        tile.draggable =
-            true;
-
-
-        /*
-         * هذا الرقم لا يتغير
-         *
-         * 0 = القطعة 1
-         * 1 = القطعة 2
-         * ...
-         * 8 = القطعة 9
-         */
-
-        tile.dataset.index =
-            i;
-
-
-        /* =========================
-           قص الصورة
-        ========================= */
-
-        const x =
-            (i % 3) * 100;
-
-        const y =
-            Math.floor(i / 3) * 133;
-
-
-        tile.style.backgroundImage =
-            "url('" +
-            currentImage +
-            "')";
-
-
-        tile.style.backgroundPosition =
-            "-" +
-            x +
-            "px -" +
-            y +
-            "px";
-
-
-        tile.style.backgroundSize =
-            "300px 400px";
-
-
-        /* =========================
-           رقم القطعة
-        ========================= */
-
-        const number =
-            document.createElement("span");
-
-
-        number.className =
-            "tile-number";
-
-
-        number.textContent =
-            i + 1;
-
-
-        tile.appendChild(
-            number
-        );
-
-
-        /* =========================
-           بداية السحب
-        ========================= */
-
-        tile.addEventListener(
-            "dragstart",
-            function() {
-
-                draggedTile =
-                    tile;
-
-                tile.classList.add(
-                    "dragging"
-                );
-
-            }
-        );
-
-
-        /* =========================
-           نهاية السحب
-        ========================= */
-
-        tile.addEventListener(
-            "dragend",
-            function() {
-
-                tile.classList.remove(
-                    "dragging"
-                );
-
-                draggedTile =
-                    null;
-
-            }
-        );
-
-
-        /* =========================
-           النقر
-        ========================= */
-
-        tile.addEventListener(
-            "click",
-            function(event) {
-
-                event.stopPropagation();
-
-                clickTile(tile);
-
-            }
-        );
-
-
-        piecesContainer.appendChild(
-            tile
-        );
-
-    }
-
-}
-
-
-/* ==================================================
-   سحب القطعة إلى خانة
-================================================== */
-
-function moveTileToZone(
-    tile,
-    zone
-) {
-
-    const oldParent =
-        tile.parentElement;
-
-
-    /*
-     * إذا الخانة فارغة
-     */
-
-    if (
-        zone.children.length === 0
-    ) {
-
-        zone.appendChild(
-            tile
-        );
-
-        clearSelection();
-
-        return;
-
-    }
-
-
-    /*
-     * توجد قطعة داخل الخانة
-     */
-
-    const oldTile =
-        zone.querySelector(".tile");
-
-
-    /*
-     * إذا كانت القطعة المسحوبة
-     * أصلًا من خانة أخرى
-     */
-
-    if (
-        oldParent &&
-        oldParent.classList.contains(
-            "drop-zone"
-        )
-   ) {
-
-        oldParent.appendChild(
-            oldTile
-        );
-
-    }
-
-    else {
-
-        /*
-         * إذا جاءت من صندوق القطع
-         */
-
-        piecesContainer.appendChild(
-            oldTile
-        );
-
-    }
-
-
-    zone.appendChild(
-        tile
-    );
-
-
-    clearSelection();
-
-}
-
-
-/* ==================================================
-   النقر على القطع
-================================================== */
-
-function clickTile(tile) {
-
-    /*
-     * أول ضغطة
-     */
-
-    if (!selectedTile) {
-
-        selectedTile =
-            tile;
-
-        tile.classList.add(
-            "selected"
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * الضغط على نفس القطعة
-     */
-
-    if (
-        selectedTile === tile
-    ) {
-
-        clearSelection();
-
-        return;
-
-    }
-
-
-    /*
-     * تبديل القطعتين
-     */
-
-    swapTiles(
-        selectedTile,
-        tile
-    );
-
-
-    clearSelection();
-
-    updateStatus();
-
-    checkWin(true);
-
-}
-
-
-/* ==================================================
-   تبديل قطعتين
-================================================== */
-
-function swapTiles(
-    tileA,
-    tileB
-) {
-
-    const parentA =
-        tileA.parentElement;
-
-    const parentB =
-        tileB.parentElement;
-
-
-    if (
-        !parentA ||
-        !parentB
-    ) {
-
-        return;
-
-    }
-
-
-    /*
-     * إذا كانت القطعتان في
-     * نفس الحاوية
-     */
-
-    if (
-        parentA === parentB
-    ) {
-
-        const children =
-            Array.from(
-                parentA.children
-            );
-
-        const indexA =
-            children.indexOf(
-                tileA
-            );
-
-        const indexB =
-            children.indexOf(
-                tileB
-            );
-
-
-        if (
-            indexA < indexB
-        ) {
-
-            parentA.insertBefore(
-                tileB,
-                tileA
-            );
-
-            parentA.insertBefore(
-                tileA,
-                children[indexB]
-            );
-
-        }
-        else {
-
-            parentA.insertBefore(
-                tileA,
-                tileB
-            );
-
-            parentA.insertBefore(
-                tileB,
-                children[indexA]
-            );
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     * القطعتان في مكانين مختلفين
-     */
-
-    const placeholder =
-        document.createElement(
-            "div"
-        );
-
-
-    parentA.insertBefore(
-        placeholder,
-        tileA
-    );
-
-
-    parentB.appendChild(
-        tileA
-    );
-
-
-    parentA.appendChild(
-        tileB
-    );
-
-
-    placeholder.replaceWith(
-        tileB
-    );
-
-}
-
-
-/* ==================================================
-   مسح التحديد
-================================================== */
-
-function clearSelection() {
-
-    if (selectedTile) {
-
-        selectedTile.classList.remove(
-            "selected"
-        );
-
-    }
-
-    selectedTile =
-        null;
-
-}
-
-
-/* ==================================================
-   النقر على الصندوق
-================================================== */
-
-piecesContainer.addEventListener(
-    "click",
-    function() {
-
-        clearSelection();
-
-    }
-);
-
-
-/* ==================================================
-   السماح بإرجاع القطعة للصندوق
-================================================== */
-
-piecesContainer.addEventListener(
-    "dragover",
-    function(event) {
-
-        event.preventDefault();
-
-    }
-);
-
-
-piecesContainer.addEventListener(
-    "drop",
-    function(event) {
-
-        event.preventDefault();
-
-
-        if (!draggedTile) {
-
-            return;
-
-        }
-
-
-        piecesContainer.appendChild(
-            draggedTile
-        );
-
-
-        draggedTile =
-            null;
-
-
-        clearSelection();
-
-        updateStatus();
-
-    }
-);
-
-
-/* ==================================================
-   خلط اللعبة
-================================================== */
-
-function shuffleGame() {
-
-    hasWon =
-        false;
-
-    winMessage.style.display =
-        "none";
-
-
-    clearSelection();
-
-
-    /*
-     * نجمع كل القطع
-     * سواء كانت داخل اللوحة
-     * أو الصندوق
-     */
-
-    const tiles =
-        Array.from(
-            document.querySelectorAll(
-                ".tile"
-            )
-        );
-
-
-    /*
-     * نعيدها للصندوق
-     */
-
-    tiles.forEach(
-        function(tile) {
-
-            tile.classList.remove(
-                "selected"
-            );
-
-            tile.classList.remove(
-                "dragging"
-            );
-
-            piecesContainer.appendChild(
-                tile
-            );
-
-        }
-    );
-
-
-    /*
-     * خلط Fisher-Yates
-     */
-
-    for (
-        let i = tiles.length - 1;
-        i > 0;
-        i--
-    ) {
-
-        const j =
-            Math.floor(
-                Math.random() *
-                (i + 1)
-            );
-
-
-        const temp =
-            tiles[i];
-
-        tiles[i] =
-            tiles[j];
-
-        tiles[j] =
-            temp;
-
-    }
-
-
-    /*
-     * وضع القطع بالترتيب الجديد
-     */
-
-    tiles.forEach(
-        function(tile) {
-
-            piecesContainer.appendChild(
-                tile
-            );
-
-        }
-    );
-
-
-    updateStatus();
-
-}
-
-
-/* ==================================================
-   حساب القطع الصحيحة
-================================================== */
-
-function countCorrect() {
-
-    let correct =
-        0;
-
-
-    const zones =
-        Array.from(
-            board.children
-        );
-
-
-    zones.forEach(
-        function(zone, index) {
-
-            if (
-                zone.children.length !== 1
-            ) {
-
-                return;
-
-            }
-
-
-            const tile =
-                zone.querySelector(
-                    ".tile"
-                );
-
-
-            if (!tile) {
-
-                return;
-
-            }
-
-
-            const tileIndex =
-                Number(
-                    tile.dataset.index
-                );
-
-
-            if (
-                tileIndex === index
-            ) {
-
-                correct++;
-
-            }
-
-        }
-    );
-
-
-    return correct;
-
-}
-
-
-/* ==================================================
-   تحديث العداد
-================================================== */
-
-function updateStatus() {
-
-    const correct =
-        countCorrect();
-
-
-    statusBox.textContent =
-        correct +
-        " / 9 قطع صحيحة";
-
-}
-
-
-/* ==================================================
-   التحقق من الفوز
-================================================== */
-
-function checkWin(
-    silent
-) {
-
-    if (hasWon) {
-
-        return true;
-
-    }
-
-
-    const zones =
-        Array.from(
-            board.children
-        );
-
-
-    /*
-     * يجب أن تكون كل الخانات ممتلئة
-     */
-
-    const complete =
-        zones.every(
-            function(zone) {
-
-                return (
-                    zone.children.length === 1
-                );
-
-            }
-        );
-
-
-    if (!complete) {
-
-        if (!silent) {
-
-            alert(
-                "⚠️ أكمل وضع القطع التسع في لوحة التركيب أولاً."
-            );
-
-        }
-
-        return false;
-
-    }
-
-
-    /*
-     * فحص الترتيب
-     */
-
-    for (
-        let i = 0;
-        i < zones.length;
-        i++
-    ) {
-
-        const tile =
-            zones[i].querySelector(
-                ".tile"
-            );
-
-
-        if (!tile) {
-
-            return false;
-
-        }
-
-
-        const tileIndex =
-            Number(
-                tile.dataset.index
-            );
-
-
-        if (
-            tileIndex !== i
-        ) {
-
-            if (!silent) {
-
-                alert(
-                    "❌ بعض القطع ليست في أماكنها الصحيحة."
-                );
-
-            }
-
-            return false;
-
-        }
-
-    }
-
-
-    /*
-     * فوز
-     */
-
-    hasWon =
-        true;
-
-
-    statusBox.textContent =
-        "🎉 9 / 9 — فزت!";
-
-
-    winMessage.style.display =
-        "block";
-
-
-    createConfetti();
-
-
-    return true;
-
-}
-
-
-/* ==================================================
-   الاحتفال
-================================================== */
-
-function createConfetti() {
-
-    const symbols =
-        [
-            "🎉",
-            "⭐",
-            "🏆",
-            "🎈",
-            "✨",
-            "💖"
-        ];
-
-
-    for (
-        let i = 0;
-        i < 60;
-        i++
-    ) {
-
-        const item =
-            document.createElement(
-                "div"
-            );
-
-
-        item.className =
-            "confetti";
-
-
-        item.textContent =
-            symbols[
-                Math.floor(
-                    Math.random() *
-                    symbols.length
-                )
-            ];
-
-
-        item.style.left =
-            (
-                Math.random() *
-                100
-            ) +
-            "vw";
-
-
-        item.style.animationDuration =
-            (
-                1 +
-                Math.random() * 2
-            ) +
-            "s";
-
-
-        item.style.animationDelay =
-            (
-                Math.random() * .5
-            ) +
-            "s";
-
-
-        document.body.appendChild(
-            item
-        );
-
-
-        setTimeout(
-            function() {
-
-                item.remove();
-
-            },
-            3500
-        );
-
-    }
-
-}
-
-
-/* ==================================================
-   إلغاء تحديد القطعة عند الضغط بالخارج
-================================================== */
-
-document.addEventListener(
-    "click",
-    function(event) {
-
-        if (
-            !event.target.classList.contains(
-                "tile"
-            )
-        ) {
-
-            clearSelection();
-
-        }
-
-    }
-);
-
-</script>
-
-</body>
-</html>
+function startTimer(){clearInterval(timerId);$('timer').textContent=state.remaining; $('timer').className='timer';timerId=setInterval(()=>{if(state.paused)return;state.remaining--;state.totalTime++;updateTimer();if(state.remaining<=0){clearInterval(timerId);answer(-1)}},1000)}
+function updateTimer(){const t=$('timer');t.textContent=state.remaining;t.className='timer'+(state.remaining<=10?' warning':'')+(state.remaining<=5?' danger':'')}
+function updateLifeButtons(){['fifty','hint','skip'].forEach(id=>$(id).disabled=state[id==='fifty'?'used50':id==='hint'?'usedHint':'usedSkip'])}
+function lockOptions(){[...document.querySelectorAll('.option')].forEach(b=>b.disabled=true)}
+function answer(selected){if(state.paused)return;clearInterval(timerId);const q=current();lockOptions();const buttons=[...document.querySelectorAll('.option')];if(selected===q.corr){buttons[selected]?.classList.add('correct');state.correct++;state.score+=Math.max(10,state.remaining)*10;beep(820,.12);$('feedback').textContent='✅ إجابة صحيحة!';$('feedback').className='feedback ok';speak('إجابة صحيحة، أحسنت!');setTimeout(next,700)}else{if(buttons[selected])buttons[selected].classList.add('wrong');buttons[q.corr]?.classList.add('correct');beep(180,.18,'square');$('feedback').textContent=selected===-1?'⏰ انتهى الوقت!':'❌ إجابة غير صحيحة';$('feedback').className='feedback bad';speak(`الإجابة الصحيحة هي ${q.opts[q.corr]}`);setTimeout(()=>finish(false),900)}persist()}
+function next(){state.index++;persist();render()}
+function use50(){if(state.used50)return;state.used50=true;const q=current(),wrong=shuffle([0,1,2,3].filter(i=>i!==q.corr)).slice(0,2);const bs=[...document.querySelectorAll('.option')];wrong.forEach(i=>{bs[i].disabled=true;bs[i].classList.add('dim')});updateLifeButtons();beep(450,.1);toast('تم حذف إجابتين خاطئتين');persist()}
+function useHint(){if(state.usedHint)return;state.usedHint=true;const q=current();const hint=q.opts.filter((_,i)=>i!==q.corr)[0];updateLifeButtons();beep(520,.12);toast(`💡 تلميح: استبعد «${hint}»`);$('speech').textContent=`تلميحي لك: حاول استبعاد «${hint}».`;persist()}
+function useSkip(){if(state.usedSkip)return;state.usedSkip=true;clearInterval(timerId);updateLifeButtons();toast('تم تخطي السؤال بدون خصم');beep(700,.08);setTimeout(next,350);persist()}
+function finish(won){clearInterval(timerId);window.speechSynthesis?.cancel();if(won){$('resultTitle').textContent='👑 فتحت صندوق الكنز!';$('resultText').textContent=`أحسنت يا ${state.player}! أكملت ${state.questions.length} سؤالاً وحققت نتيجة رائعة.`;beep(980,.2)}else{$('resultTitle').textContent='🛡️ انتهت الجولة';$('resultText').textContent=`يا ${state.player}، وصلت إلى السؤال ${state.index+1}. يمكنك بدء مغامرة جديدة أو تجربة أسئلة مختلفة.`;beep(220,.2,'square')}$('resultCorrect').textContent=state.correct;$('resultScore').textContent=state.score.toLocaleString('en-US');$('resultTime').textContent=state.totalTime;clearSave();show('resultScreen')}
+function pause(){state.paused=true;clearInterval(timerId);$('pauseOverlay').classList.remove('hidden');persist()}
+function resume(){state.paused=false;$('pauseOverlay').classList.add('hidden');startTimer()}
+function home(){state.paused=true;clearInterval(timerId);$('pauseOverlay').classList.add('hidden');show('startScreen');if(loadSave())$('continueBtn').classList.remove('hidden')}
+$('startBtn').onclick=startNew;$('continueBtn').onclick=startContinue;$('restartBtn').onclick=()=>{show('startScreen');$('playerName').value=state.player;};$('pauseBtn').onclick=pause;$('resumeBtn').onclick=resume;$('homeBtn').onclick=home;$('fifty').onclick=use50;$('hint').onclick=useHint;$('skip').onclick=useSkip;$('quitBtn').onclick=()=>{persist();$('confirmOverlay').classList.remove('hidden')};$('cancelExit').onclick=()=>$('confirmOverlay').classList.add('hidden');$('confirmExit').onclick=()=>{$('confirmOverlay').classList.add('hidden');show('startScreen');toast('تم حفظ تقدمك')};
+document.addEventListener('keydown',e=>{if($('gameScreen').classList.contains('hidden')||state.paused)return;const map={'1':0,'2':1,'3':2,'4':3,'أ':0,'ب':1,'ج':2,'د':3};if(map[e.key]!==undefined)document.querySelectorAll('.option')[map[e.key]]?.click();if(e.key===' '){e.preventDefault();pause()}});
+window.addEventListener('beforeunload',()=>{if(!$('gameScreen').classList.contains('hidden')&&state.questions.length)persist()});
+if(loadSave())$('continueBtn').classList.remove('hidden');
+</script></body></html>

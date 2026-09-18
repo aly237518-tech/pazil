@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>بازل الأبطال الصغار</title>
+
+<style>
+
+/* =========================
+   الأساس
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 20px;
+
+    font-family:
+        "Segoe UI",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4facfe,
+            #00f2fe
+        );
+
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow-x: auto;
+}
+
+h1 {
+    margin: 5px 0;
+
+    font-size: 30px;
+
+    text-shadow:
+        2px 2px 5px rgba(0,0,0,.5);
+}
+
+.subtitle {
+    margin: 0 0 15px;
+
+    font-size: 16px;
+}
+
+
+/* =========================
+   أزرار الصور
+========================= */
+
+#character-buttons {
+    display: flex;
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    margin-bottom: 15px;
+}
+
+button {
+    border: none;
+
+    padding: 11px 18px;
+
+    border-radius: 7px;
+
+    background: #ff9800;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 7px rgba(0,0,0,.25);
+
+    transition:
+        .15s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+
+    background: #e68900;
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#check-btn {
+    background: #4caf50;
+}
+
+#check-btn:hover {
+    background: #388e3c;
+}
+
+
+/* =========================
+   اللعبة
+========================= */
+
+#game-container {
+    display: none;
+
+    direction: ltr;
+
+    gap: 20px;
+
+    align-items: flex-start;
+
+    padding: 20px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(0,0,0,.20);
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.3);
+}
+
+
+/* =========================
+   الأقسام
+========================= */
+
+.game-section {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+}
+
+.section-title {
+    direction: rtl;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+
+    text-shadow:
+        1px 1px 2px #000;
+}
+
+
+/* =========================
+   صندوق القطع
+========================= */
+
+#pieces-container {
+
+    width: 312px;
+
+    min-height: 411px;
+
+    padding: 4px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 100px);
+
+    grid-auto-rows: 133px;
+
+    gap: 4px;
+
+    background: #333;
+
+    border-radius: 8px;
+
+    direction: ltr;
+
+}
+
+
+/* =========================
+   لوحة الحل
+========================= */
+
+#puzzle-board {
+
+    width: 312px;
+
+    height: 411px;
+
+    padding: 4px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 100px);
+
+    grid-template-rows:
+        repeat(3, 133px);
+
+    gap: 4px;
+
+    background: #333;
+
+    border-radius: 8px;
+
+    direction: ltr;
+}
+
+
+/* =========================
+   الخانات
+========================= */
+
+.drop-zone {
+
+    width: 100px;
+
+    height: 133px;
+
+    position: relative;
+
+    background: #222;
+
+    border:
+        2px dashed #777;
+
+    border-radius: 4px;
+
+    transition:
+        .15s;
+}
+
+.drop-zone.drag-over {
+    background: #555;
+
+    border-color:
+        #ffeb3b;
+
+    transform:
+        scale(1.02);
+}
+
+
+/* رقم المكان الشفاف */
+
+.drop-zone::before {
+
+    content: attr(data-number);
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%,-50%);
+
+    font-size: 30px;
+
+    font-weight: bold;
+
+    color:
+        rgba(255,255,255,.12);
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   قطع البازل
+========================= */
+
+.tile {
+
+    width: 100px;
+
+    height: 133px;
+
+    position: relative;
+
+    background-repeat: no-repeat;
+
+    border:
+        2px solid white;
+
+    border-radius: 4px;
+
+    cursor: grab;
+
+    user-select: none;
+
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.4);
+
+    transition:
+        transform .12s,
+        opacity .12s,
+        outline .12s;
+}
+
+.tile:hover {
+    transform:
+        scale(1.02);
+}
+
+.tile.dragging {
+    opacity: .45;
+}
+
+.tile.selected {
+    outline:
+        4px solid #ffeb3b;
+
+    outline-offset: 1px;
+
+    transform:
+        scale(1.04);
+
+    z-index: 20;
+}
+
+
+/* =========================
+   رقم القطعة
+========================= */
+
+.tile-number {
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    padding:
+        2px 7px;
+
+    background:
+        rgba(0,0,0,.8);
+
+    color:
+        #ffeb3b;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    border-bottom-right-radius:
+        5px;
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   التحكم
+========================= */
+
+#controls {
+
+    width: 190px;
+
+    direction: rtl;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+#controls button {
+    width: 180px;
+}
+
+#status {
+
+    width: 180px;
+
+    min-height: 32px;
+
+    padding: 6px;
+
+    text-align: center;
+
+    border-radius: 6px;
+
+    background:
+        rgba(0,0,0,.3);
+
+    font-weight: bold;
+}
+
+
+/* =========================
+   الصورة الأصلية
+========================= */
+
+.original-label {
+    font-size: 14px;
+
+    margin-top: 3px;
+}
+
+#original-image {
+
+    width: 130px;
+
+    height: 173px;
+
+    object-fit: cover;
+
+    border:
+        2px solid white;
+
+    border-radius: 6px;
+}
+
+
+/* =========================
+   الفوز
+========================= */
+
+#win-message {
+
+    display: none;
+
+    width: 190px;
+
+    padding: 10px;
+
+    text-align: center;
+
+    border-radius: 8px;
+
+    background:
+        rgba(0,0,0,.85);
+
+    color:
+        #ffeb3b;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    animation:
+        winAnimation .5s infinite alternate;
+}
+
+@keyframes winAnimation {
+
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-5px);
+    }
+}
+
+
+/* =========================
+   الاحتفال
+========================= */
+
+.confetti {
+
+    position: fixed;
+
+    top: -30px;
+
+    font-size: 25px;
+
+    z-index: 9999;
+
+    pointer-events: none;
+
+    animation:
+        confettiFall 2s linear forwards;
+}
+
+@keyframes confettiFall {
+
+    0% {
+        transform:
+            translateY(0)
+            rotate(0deg);
+
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            translateY(110vh)
+            rotate(720deg);
+
+        opacity: 0;
+    }
+}
+
+
+/* =========================
+   الهاتف
+========================= */
+
+@media (max-width: 900px) {
+
+    #game-container {
+
+        flex-direction: column;
+
+        align-items: center;
+    }
+
+    #controls {
+        order: 1;
+    }
+
+    #pieces-section {
+        order: 2;
+    }
+
+    #board-section {
+        order: 3;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>
+    🧩 بازل الأبطال الصغار
+</h1>
+
+<p class="subtitle">
+    اختر الصورة ثم ركب القطع في لوحة التركيب
+</p>
+
+
+<!-- =========================
+     اختيار الصور
+========================= -->
+
+<div id="character-buttons">
+
+    <button onclick="startGame('kid1.jpg')">
+        👦 صورة البطل الأول
+    </button>
+
+    <button onclick="startGame('kid2.jpg')">
+        👧 صورة الأخت
+    </button>
+
+    <button onclick="startGame('kid3.jpg')">
+        👦 صورة البطل الثاني
+    </button>
+
+</div>
+
+
+<!-- =========================
+     اللعبة
+========================= -->
+
+<div id="game-container">
+
+
+    <!-- التحكم -->
+
+    <div id="controls">
+
+        <button onclick="shuffleGame()">
+            🔀 خلط القطع
+        </button>
+
+        <button id="check-btn"
+                onclick="checkWin(false)">
+            🏆 تحقق من الفوز
+        </button>
+
+        <div id="status">
+            0 / 9
+        </div>
+
+        <div class="original-label">
+            🖼️ الصورة الأصلية
+        </div>
+
+        <img id="original-image"
+             src=""
+             alt="الصورة الأصلية">
+
+        <div id="win-message">
+            🎉 أحسنت يا بطل! 🎉
+            <br>
+            فزت باللعبة!
+        </div>
+
+    </div>
+
+
+    <!-- قطع الصورة -->
+
+    <div id="pieces-section"
+         class="game-section">
+
+        <div class="section-title">
+            🧩 قطع الصورة
+        </div>
+
+        <div id="pieces-container"></div>
+
+    </div>
+
+
+    <!-- لوحة التركيب -->
+
+    <div id="board-section"
+         class="game-section">
+
+        <div class="section-title">
+            🎯 لوحة التركيب
+        </div>
+
+        <div id="puzzle-board"></div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+/* ==================================================
+   المتغيرات
+================================================== */
+
+const board =
+    document.getElementById("puzzle-board");
+
+const piecesContainer =
+    document.getElementById("pieces-container");
+
+const gameContainer =
+    document.getElementById("game-container");
+
+const originalImage =
+    document.getElementById("original-image");
+
+const statusBox =
+    document.getElementById("status");
+
+const winMessage =
+    document.getElementById("win-message");
+
+
+const TOTAL =
+    9;
+
+
+let currentImage =
+    "";
+
+let draggedTile =
+    null;
+
+let selectedTile =
+    null;
+
+let hasWon =
+    false;
+
+
+/* ==================================================
+   بدء اللعبة
+================================================== */
+
+function startGame(imageName) {
+
+    currentImage =
+        imageName;
+
+    originalImage.src =
+        imageName;
+
+    gameContainer.style.display =
+        "flex";
+
+    winMessage.style.display =
+        "none";
+
+    hasWon =
+        false;
+
+    selectedTile =
+        null;
+
+    draggedTile =
+        null;
+
+    createBoard();
+
+    createPieces();
+
+    shuffleGame();
+
+    updateStatus();
+
+}
+
+
+/* ==================================================
+   إنشاء لوحة الحل
+================================================== */
+
+function createBoard() {
+
+    board.innerHTML =
+        "";
+
+    for (
+        let i = 0;
+        i < TOTAL;
+        i++
+    ) {
+
+        const zone =
+            document.createElement("div");
+
+        zone.className =
+            "drop-zone";
+
+        /*
+         * رقم المكان الصحيح
+         */
+
+        zone.dataset.index =
+            i;
+
+        zone.dataset.number =
+            i + 1;
+
+
+        /* =========================
+           Drag Over
+        ========================= */
+
+        zone.addEventListener(
+            "dragover",
+            function(event) {
+
+                event.preventDefault();
+
+                zone.classList.add(
+                    "drag-over"
+                );
+
+            }
+        );
+
+
+        /* =========================
+           Drag Leave
+        ========================= */
+
+        zone.addEventListener(
+            "dragleave",
+            function() {
+
+                zone.classList.remove(
+                    "drag-over"
+                );
+
+            }
+        );
+
+
+        /* =========================
+           Drop
+        ========================= */
+
+        zone.addEventListener(
+            "drop",
+            function(event) {
+
+                event.preventDefault();
+
+                zone.classList.remove(
+                    "drag-over"
+                );
+
+
+                if (!draggedTile) {
+
+                    return;
+
+                }
+
+
+                moveTileToZone(
+                    draggedTile,
+                    zone
+                );
+
+
+                draggedTile =
+                    null;
+
+
+                updateStatus();
+
+                checkWin(true);
+
+            }
+        );
+
+
+        board.appendChild(
+            zone
+        );
+
+    }
+
+}
+
+
+/* ==================================================
+   إنشاء قطع الصورة
+================================================== */
+
+function createPieces() {
+
+    piecesContainer.innerHTML =
+        "";
+
+    for (
+        let i = 0;
+        i < TOTAL;
+        i++
+    ) {
+
+        const tile =
+            document.createElement("div");
+
+
+        tile.className =
+            "tile";
+
+
+        tile.draggable =
+            true;
+
+
+        /*
+         * هذا الرقم لا يتغير
+         *
+         * 0 = القطعة 1
+         * 1 = القطعة 2
+         * ...
+         * 8 = القطعة 9
+         */
+
+        tile.dataset.index =
+            i;
+
+
+        /* =========================
+           قص الصورة
+        ========================= */
+
+        const x =
+            (i % 3) * 100;
+
+        const y =
+            Math.floor(i / 3) * 133;
+
+
+        tile.style.backgroundImage =
+            "url('" +
+            currentImage +
+            "')";
+
+
+        tile.style.backgroundPosition =
+            "-" +
+            x +
+            "px -" +
+            y +
+            "px";
+
+
+        tile.style.backgroundSize =
+            "300px 400px";
+
+
+        /* =========================
+           رقم القطعة
+        ========================= */
+
+        const number =
+            document.createElement("span");
+
+
+        number.className =
+            "tile-number";
+
+
+        number.textContent =
+            i + 1;
+
+
+        tile.appendChild(
+            number
+        );
+
+
+        /* =========================
+           بداية السحب
+        ========================= */
+
+        tile.addEventListener(
+            "dragstart",
+            function() {
+
+                draggedTile =
+                    tile;
+
+                tile.classList.add(
+                    "dragging"
+                );
+
+            }
+        );
+
+
+        /* =========================
+           نهاية السحب
+        ========================= */
+
+        tile.addEventListener(
+            "dragend",
+            function() {
+
+                tile.classList.remove(
+                    "dragging"
+                );
+
+                draggedTile =
+                    null;
+
+            }
+        );
+
+
+        /* =========================
+           النقر
+        ========================= */
+
+        tile.addEventListener(
+            "click",
+            function(event) {
+
+                event.stopPropagation();
+
+                clickTile(tile);
+
+            }
+        );
+
+
+        piecesContainer.appendChild(
+            tile
+        );
+
+    }
+
+}
+
+
+/* ==================================================
+   سحب القطعة إلى خانة
+================================================== */
+
+function moveTileToZone(
+    tile,
+    zone
+) {
+
+    const oldParent =
+        tile.parentElement;
+
+
+    /*
+     * إذا الخانة فارغة
+     */
+
+    if (
+        zone.children.length === 0
+    ) {
+
+        zone.appendChild(
+            tile
+        );
+
+        clearSelection();
+
+        return;
+
+    }
+
+
+    /*
+     * توجد قطعة داخل الخانة
+     */
+
+    const oldTile =
+        zone.querySelector(".tile");
+
+
+    /*
+     * إذا كانت القطعة المسحوبة
+     * أصلًا من خانة أخرى
+     */
+
+    if (
+        oldParent &&
+        oldParent.classList.contains(
+            "drop-zone"
+        )
+   ) {
+
+        oldParent.appendChild(
+            oldTile
+        );
+
+    }
+
+    else {
+
+        /*
+         * إذا جاءت من صندوق القطع
+         */
+
+        piecesContainer.appendChild(
+            oldTile
+        );
+
+    }
+
+
+    zone.appendChild(
+        tile
+    );
+
+
+    clearSelection();
+
+}
+
+
+/* ==================================================
+   النقر على القطع
+================================================== */
+
+function clickTile(tile) {
+
+    /*
+     * أول ضغطة
+     */
+
+    if (!selectedTile) {
+
+        selectedTile =
+            tile;
+
+        tile.classList.add(
+            "selected"
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * الضغط على نفس القطعة
+     */
+
+    if (
+        selectedTile === tile
+    ) {
+
+        clearSelection();
+
+        return;
+
+    }
+
+
+    /*
+     * تبديل القطعتين
+     */
+
+    swapTiles(
+        selectedTile,
+        tile
+    );
+
+
+    clearSelection();
+
+    updateStatus();
+
+    checkWin(true);
+
+}
+
+
+/* ==================================================
+   تبديل قطعتين
+================================================== */
+
+function swapTiles(
+    tileA,
+    tileB
+) {
+
+    const parentA =
+        tileA.parentElement;
+
+    const parentB =
+        tileB.parentElement;
+
+
+    if (
+        !parentA ||
+        !parentB
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * إذا كانت القطعتان في
+     * نفس الحاوية
+     */
+
+    if (
+        parentA === parentB
+    ) {
+
+        const children =
+            Array.from(
+                parentA.children
+            );
+
+        const indexA =
+            children.indexOf(
+                tileA
+            );
+
+        const indexB =
+            children.indexOf(
+                tileB
+            );
+
+
+        if (
+            indexA < indexB
+        ) {
+
+            parentA.insertBefore(
+                tileB,
+                tileA
+            );
+
+            parentA.insertBefore(
+                tileA,
+                children[indexB]
+            );
+
+        }
+        else {
+
+            parentA.insertBefore(
+                tileA,
+                tileB
+            );
+
+            parentA.insertBefore(
+                tileB,
+                children[indexA]
+            );
+
+        }
+
+        return;
+
+    }
+
+
+    /*
+     * القطعتان في مكانين مختلفين
+     */
+
+    const placeholder =
+        document.createElement(
+            "div"
+        );
+
+
+    parentA.insertBefore(
+        placeholder,
+        tileA
+    );
+
+
+    parentB.appendChild(
+        tileA
+    );
+
+
+    parentA.appendChild(
+        tileB
+    );
+
+
+    placeholder.replaceWith(
+        tileB
+    );
+
+}
+
+
+/* ==================================================
+   مسح التحديد
+================================================== */
+
+function clearSelection() {
+
+    if (selectedTile) {
+
+        selectedTile.classList.remove(
+            "selected"
+        );
+
+    }
+
+    selectedTile =
+        null;
+
+}
+
+
+/* ==================================================
+   النقر على الصندوق
+================================================== */
+
+piecesContainer.addEventListener(
+    "click",
+    function() {
+
+        clearSelection();
+
+    }
+);
+
+
+/* ==================================================
+   السماح بإرجاع القطعة للصندوق
+================================================== */
+
+piecesContainer.addEventListener(
+    "dragover",
+    function(event) {
+
+        event.preventDefault();
+
+    }
+);
+
+
+piecesContainer.addEventListener(
+    "drop",
+    function(event) {
+
+        event.preventDefault();
+
+
+        if (!draggedTile) {
+
+            return;
+
+        }
+
+
+        piecesContainer.appendChild(
+            draggedTile
+        );
+
+
+        draggedTile =
+            null;
+
+
+        clearSelection();
+
+        updateStatus();
+
+    }
+);
+
+
+/* ==================================================
+   خلط اللعبة
+================================================== */
+
+function shuffleGame() {
+
+    hasWon =
+        false;
+
+    winMessage.style.display =
+        "none";
+
+
+    clearSelection();
+
+
+    /*
+     * نجمع كل القطع
+     * سواء كانت داخل اللوحة
+     * أو الصندوق
+     */
+
+    const tiles =
+        Array.from(
+            document.querySelectorAll(
+                ".tile"
+            )
+        );
+
+
+    /*
+     * نعيدها للصندوق
+     */
+
+    tiles.forEach(
+        function(tile) {
+
+            tile.classList.remove(
+                "selected"
+            );
+
+            tile.classList.remove(
+                "dragging"
+            );
+
+            piecesContainer.appendChild(
+                tile
+            );
+
+        }
+    );
+
+
+    /*
+     * خلط Fisher-Yates
+     */
+
+    for (
+        let i = tiles.length - 1;
+        i > 0;
+        i--
+    ) {
+
+        const j =
+            Math.floor(
+                Math.random() *
+                (i + 1)
+            );
+
+
+        const temp =
+            tiles[i];
+
+        tiles[i] =
+            tiles[j];
+
+        tiles[j] =
+            temp;
+
+    }
+
+
+    /*
+     * وضع القطع بالترتيب الجديد
+     */
+
+    tiles.forEach(
+        function(tile) {
+
+            piecesContainer.appendChild(
+                tile
+            );
+
+        }
+    );
+
+
+    updateStatus();
+
+}
+
+
+/* ==================================================
+   حساب القطع الصحيحة
+================================================== */
+
+function countCorrect() {
+
+    let correct =
+        0;
+
+
+    const zones =
+        Array.from(
+            board.children
+        );
+
+
+    zones.forEach(
+        function(zone, index) {
+
+            if (
+                zone.children.length !== 1
+            ) {
+
+                return;
+
+            }
+
+
+            const tile =
+                zone.querySelector(
+                    ".tile"
+                );
+
+
+            if (!tile) {
+
+                return;
+
+            }
+
+
+            const tileIndex =
+                Number(
+                    tile.dataset.index
+                );
+
+
+            if (
+                tileIndex === index
+            ) {
+
+                correct++;
+
+            }
+
+        }
+    );
+
+
+    return correct;
+
+}
+
+
+/* ==================================================
+   تحديث العداد
+================================================== */
+
+function updateStatus() {
+
+    const correct =
+        countCorrect();
+
+
+    statusBox.textContent =
+        correct +
+        " / 9 قطع صحيحة";
+
+}
+
+
+/* ==================================================
+   التحقق من الفوز
+================================================== */
+
+function checkWin(
+    silent
+) {
+
+    if (hasWon) {
+
+        return true;
+
+    }
+
+
+    const zones =
+        Array.from(
+            board.children
+        );
+
+
+    /*
+     * يجب أن تكون كل الخانات ممتلئة
+     */
+
+    const complete =
+        zones.every(
+            function(zone) {
+
+                return (
+                    zone.children.length === 1
+                );
+
+            }
+        );
+
+
+    if (!complete) {
+
+        if (!silent) {
+
+            alert(
+                "⚠️ أكمل وضع القطع التسع في لوحة التركيب أولاً."
+            );
+
+        }
+
+        return false;
+
+    }
+
+
+    /*
+     * فحص الترتيب
+     */
+
+    for (
+        let i = 0;
+        i < zones.length;
+        i++
+    ) {
+
+        const tile =
+            zones[i].querySelector(
+                ".tile"
+            );
+
+
+        if (!tile) {
+
+            return false;
+
+        }
+
+
+        const tileIndex =
+            Number(
+                tile.dataset.index
+            );
+
+
+        if (
+            tileIndex !== i
+        ) {
+
+            if (!silent) {
+
+                alert(
+                    "❌ بعض القطع ليست في أماكنها الصحيحة."
+                );
+
+            }
+
+            return false;
+
+        }
+
+    }
+
+
+    /*
+     * فوز
+     */
+
+    hasWon =
+        true;
+
+
+    statusBox.textContent =
+        "🎉 9 / 9 — فزت!";
+
+
+    winMessage.style.display =
+        "block";
+
+
+    createConfetti();
+
+
+    return true;
+
+}
+
+
+/* ==================================================
+   الاحتفال
+================================================== */
+
+function createConfetti() {
+
+    const symbols =
+        [
+            "🎉",
+            "⭐",
+            "🏆",
+            "🎈",
+            "✨",
+            "💖"
+        ];
+
+
+    for (
+        let i = 0;
+        i < 60;
+        i++
+    ) {
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+
+        item.className =
+            "confetti";
+
+
+        item.textContent =
+            symbols[
+                Math.floor(
+                    Math.random() *
+                    symbols.length
+                )
+            ];
+
+
+        item.style.left =
+            (
+                Math.random() *
+                100
+            ) +
+            "vw";
+
+
+        item.style.animationDuration =
+            (
+                1 +
+                Math.random() * 2
+            ) +
+            "s";
+
+
+        item.style.animationDelay =
+            (
+                Math.random() * .5
+            ) +
+            "s";
+
+
+        document.body.appendChild(
+            item
+        );
+
+
+        setTimeout(
+            function() {
+
+                item.remove();
+
+            },
+            3500
+        );
+
+    }
+
+}
+
+
+/* ==================================================
+   إلغاء تحديد القطعة عند الضغط بالخارج
+================================================== */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+        if (
+            !event.target.classList.contains(
+                "tile"
+            )
+        ) {
+
+            clearSelection();
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
